@@ -55,9 +55,10 @@ def create_app():
 
     return app
 
+# Instantiate the app globally for WSGI servers like Gunicorn
+app = create_app()
 
 if __name__ == '__main__':
-    app = create_app()
     port = int(os.getenv('PORT', 5000))
     debug = os.getenv('FLASK_ENV', 'production') == 'development'
     app.run(host='0.0.0.0', port=port, debug=debug)
