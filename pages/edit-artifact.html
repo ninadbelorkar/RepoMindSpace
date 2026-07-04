@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Artifact - RepoMind Space</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="../js/config.js"></script>
+    <script src="../js/theme.js"></script>
+</head>
+
+<body>
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="mb-4">
+                <a href="dashboard.html" class="navbar-brand" style="display: block;">RepoMind Space</a>
+            </div>
+            <div class="mb-4" style="padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
+                <span class="text-muted" style="font-size: 0.75rem; text-transform: uppercase;">Current Workspace</span>
+                <h3 style="font-size: 1.125rem;" id="workspaceNameHeader">Workspace Name</h3>
+            </div>
+            <nav class="sidebar-nav" style="margin-top: 0;">
+                <a href="workspace-detail.html" class="sidebar-link">Analysis Overview</a>
+                <a href="generate-artifact.html" class="sidebar-link">Generate Artifacts</a>
+                <a href="artifacts.html" class="sidebar-link active">Saved Artifacts</a>
+                <a href="repository-chat.html" class="sidebar-link">Repository Chat</a>
+            </nav>
+            <nav class="sidebar-nav" style="margin-top: auto;">
+                <a href="dashboard.html" class="sidebar-link">← Back to Dashboard</a>
+            </nav>
+
+            <!-- User Profile Area (Unified) -->
+            <div style="margin-top: auto; padding-top: 1.5rem; border-top: 1px solid var(--glass-border); display: flex; flex-direction: column; gap: 1rem;">
+                <a href="profile.html" style="display: flex; align-items: center; gap: 0.75rem; text-decoration: none; color: var(--text-main);">
+                    <div id="sidebar-avatar" style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #6366f1, #a855f7); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 0.9rem; overflow: hidden; flex-shrink: 0;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:60%;height:60%;color:rgba(255,255,255,0.8);"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+                    <div id="sidebar-greeting" style="font-size: 0.95rem; font-weight: 500;">Hello, there</div>
+                </a>
+                
+                <!-- Theme Switcher Pop-out -->
+                <div class="theme-switcher-container" style="background: var(--bg-dark); border: 1px solid var(--glass-border); border-radius: 8px; padding: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 0.8rem; color: var(--text-muted); padding-left: 0.25rem;">Theme</span>
+                    <div style="display: flex; gap: 0.25rem;">
+                        <button onclick="setThemeMode('system')" title="System Theme" class="theme-btn" data-theme-btn="system" style="background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 6px; border-radius: 6px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg></button>
+                        <button onclick="setThemeMode('light')" title="Light Theme" class="theme-btn" data-theme-btn="light" style="background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 6px; border-radius: 6px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg></button>
+                        <button onclick="setThemeMode('dark')" title="Dark Theme" class="theme-btn" data-theme-btn="dark" style="background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 6px; border-radius: 6px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg></button>
+                    </div>
+                </div>
+
+                <a href="#" class="sidebar-link" id="logoutBtn" style="color: #ef4444; margin-top: 0.5rem; padding: 0.5rem 0.75rem;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                    Logout
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="mb-4" style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h1 id="artifactTitle">Project README</h1>
+                    <p class="text-muted">Edit and format your artifact before saving or exporting.</p>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <button class="btn btn-secondary" onclick="exportPDF()">Export PDF</button>
+                    <button class="btn btn-secondary" onclick="exportMarkdown()">Export Markdown</button>
+                    <button class="btn btn-primary" onclick="saveArtifact()">Save Changes</button>
+                </div>
+            </header>
+
+            <div class="card" style="height: calc(100vh - 12rem); padding: 0; display: flex; flex-direction: column;">
+                <div style="padding: 1rem; border-bottom: 1px solid var(--border-color); background: var(--bg-dark);">
+                    <!-- Dummy toolbar -->
+                    <button class="btn btn-secondary" onclick="formatText('**', '**')"
+                        style="padding: 0.25rem 0.5rem; font-size: 0.875rem;"><b>B</b></button>
+                    <button class="btn btn-secondary" onclick="formatText('*', '*')"
+                        style="padding: 0.25rem 0.5rem; font-size: 0.875rem;"><i>I</i></button>
+                    <button class="btn btn-secondary" onclick="formatText('<u>', '</u>')"
+                        style="padding: 0.25rem 0.5rem; font-size: 0.875rem;"><u>U</u></button>
+                    <button class="btn btn-secondary" onclick="formatText('\n```\n', '\n```\n')"
+                        style="padding: 0.25rem 0.5rem; font-size: 0.875rem;">&lt;/&gt;</button>
+                </div>
+                <textarea class="form-control"
+                    style="flex-grow: 1; border: none; border-radius: 0; resize: none; padding: 1.5rem; font-family: monospace; font-size: 1rem;"
+                    id="artifactContent" placeholder="Artifact content will load here..."></textarea>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/analysis.js"></script>
+    <script src="../js/artifacts.js"></script>
+    <script>
+        function saveArtifact() {
+            alert('Artifact saved successfully!');
+        }
+
+        function exportMarkdown() {
+            const content = document.getElementById('artifactContent').value;
+            const title = document.getElementById('artifactTitle').innerText || 'artifact';
+            const filename = title.toLowerCase().replace(/[^a-z0-9]/g, '_') + '.md';
+            
+            const blob = new Blob([content], { type: 'text/markdown' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function exportPDF() {
+            // A simple way to export PDF is to trigger the browser's print dialog
+            // We can temporarily hide the sidebar and header to only print the content
+            const originalContent = document.body.innerHTML;
+            const contentToPrint = document.getElementById('artifactContent').value;
+            const title = document.getElementById('artifactTitle').innerText;
+            
+            // Format it nicely for printing
+            const printWindow = window.open('', '', 'height=800,width=800');
+            printWindow.document.write('<html><head><title>' + title + '</title>');
+            printWindow.document.write('<style>body{font-family:sans-serif;line-height:1.6;padding:20px;white-space:pre-wrap;}</style>');
+            printWindow.document.write('</head><body>');
+            printWindow.document.write('<h1>' + title + '</h1>');
+            printWindow.document.write('<div>' + contentToPrint.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div>');
+            printWindow.document.write('</body></html>');
+            printWindow.document.close();
+            
+            // Wait for it to load, then print and close
+            printWindow.onload = function() {
+                printWindow.print();
+                // We add a small delay before closing to ensure the print dialog opens
+                setTimeout(() => { printWindow.close(); }, 500);
+            };
+        }
+
+        function formatText(prefix, suffix) {
+            const textarea = document.getElementById('artifactContent');
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const text = textarea.value;
+            
+            const selectedText = text.substring(start, end);
+            const replacement = prefix + selectedText + suffix;
+            
+            textarea.value = text.substring(0, start) + replacement + text.substring(end);
+            
+            // Re-select text
+            textarea.selectionStart = start + prefix.length;
+            textarea.selectionEnd = start + prefix.length + selectedText.length;
+            textarea.focus();
+        }
+
+        async function loadArtifact() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const artifactId = urlParams.get('id');
+            const token = localStorage.getItem('token');
+            
+            if (artifactId && token) {
+                try {
+                    const response = await fetch(`${API_BASE}/api/artifacts/${artifactId}`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        document.getElementById('artifactTitle').innerText = data.title || 'Generated Artifact';
+                        document.getElementById('artifactContent').value = data.content;
+                    } else {
+                        document.getElementById('artifactContent').value = "// Failed to load artifact.";
+                    }
+                } catch (e) {
+                    console.error("Error loading artifact:", e);
+                    document.getElementById('artifactContent').value = "// Error loading artifact from server.";
+                }
+            } else {
+                // Fallback for UI mockup params if no ID
+                const type = urlParams.get('type');
+                if (type) {
+                    document.getElementById('artifactTitle').innerText = `Generated ${type}`;
+                    document.getElementById('artifactContent').value = `// Auto-generated ${type} content will appear here...\n`;
+                }
+            }
+        }
+        
+        loadArtifact();
+    </script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/user-profile.js"></script>
+</body>
+
+</html>

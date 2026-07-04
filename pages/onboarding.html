@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome - RepoMind Space</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="../js/config.js"></script>
+    <script src="../js/theme.js"></script>
+    <style>
+        body { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 2rem; }
+        .onboarding-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 3rem;
+            width: 100%;
+            max-width: 520px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+        }
+        .pic-option {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.25rem;
+            border-radius: 12px;
+            border: 2px solid var(--glass-border);
+            cursor: pointer;
+            transition: all 0.2s;
+            background: var(--bg-dark);
+            margin-bottom: 0.75rem;
+        }
+        .pic-option:hover { border-color: rgba(168,85,247,0.5); background: rgba(168,85,247,0.05); }
+        .pic-option.selected { border-color: #a855f7; background: rgba(168,85,247,0.1); }
+        .pic-option input[type=radio] { display: none; }
+    </style>
+</head>
+<body>
+    <div class="onboarding-card">
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <div class="auth-brand" style="margin-bottom: 0.75rem;">RepoMind Space</div>
+            <h2 style="font-size: 1.75rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.5rem;">Welcome! Let's set up your profile</h2>
+            <p style="color: var(--text-muted); font-size: 0.95rem;">Just a few quick steps to personalise your experience.</p>
+        </div>
+
+        <form id="onboardingForm">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+                <div>
+                    <label style="display: block; font-weight: 500; font-size: 0.9rem; color: var(--text-main); margin-bottom: 0.5rem;">First Name</label>
+                    <input type="text" id="firstName" class="form-control" required>
+                </div>
+                <div>
+                    <label style="display: block; font-weight: 500; font-size: 0.9rem; color: var(--text-main); margin-bottom: 0.5rem;">Last Name</label>
+                    <input type="text" id="lastName" class="form-control" required>
+                </div>
+            </div>
+            <div style="margin-bottom: 1.25rem;">
+                <label style="display: block; font-weight: 500; font-size: 0.9rem; color: var(--text-main); margin-bottom: 0.5rem;">Email <span style="color: var(--text-muted); font-size: 0.8rem;">(read-only)</span></label>
+                <input type="email" id="email" class="form-control" disabled style="background: var(--alpha-5); color: var(--text-muted); cursor: not-allowed;">
+            </div>
+
+            <!-- Google Profile Pic Section (shown only for Google accounts) -->
+            <div id="picSection" style="display: none; margin-bottom: 1.5rem;">
+                <label style="display: block; font-weight: 500; font-size: 0.9rem; color: var(--text-main); margin-bottom: 1rem;">
+                    Profile Photo
+                </label>
+                <div style="display: flex; align-items: center; gap: 1.5rem; padding: 1.25rem; background: rgba(168,85,247,0.06); border: 1px solid rgba(168,85,247,0.2); border-radius: 12px; margin-bottom: 1rem;">
+                    <img id="googlePicPreview" src="" alt="Your Google profile picture" style="width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(168,85,247,0.4);">
+                    <div>
+                        <p style="color: var(--text-main); font-weight: 500; margin: 0 0 0.25rem;">Use your Google profile photo?</p>
+                        <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">We found your Google account picture.</p>
+                    </div>
+                </div>
+                <label class="pic-option" id="optYes">
+                    <input type="radio" name="usePic" value="yes" checked>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <span style="font-weight: 500; color: var(--text-main);">Yes, use my Google photo</span>
+                </label>
+                <label class="pic-option" id="optNo">
+                    <input type="radio" name="usePic" value="no">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    <span style="font-weight: 500; color: var(--text-main);">No, skip for now</span>
+                </label>
+            </div>
+
+            <div id="onboardingError" style="color: #ef4444; font-size: 0.875rem; margin-bottom: 1rem; display: none; padding: 0.75rem; background: rgba(239,68,68,0.1); border-radius: 8px;"></div>
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.875rem; font-size: 1rem;">Complete Setup &rarr;</button>
+        </form>
+    </div>
+
+    <script>
+        const API_BASE = `${API_BASE}/api/auth`;
+        let googlePicUrl = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const token = localStorage.getItem('token');
+            if (!token) { window.location.href = 'login.html'; return; }
+
+            try {
+                const res = await fetch(`${API_BASE}/me`, { headers: { 'Authorization': `Bearer ${token}` } });
+                const data = await res.json();
+                if (data.error) throw new Error(data.error);
+
+                document.getElementById('firstName').value = data.first_name || '';
+                document.getElementById('lastName').value = data.last_name || '';
+                document.getElementById('email').value = data.email || '';
+
+                // Show Google profile pic option if they have one
+                if (data.profile_picture && (data.auth_provider === 'google' || data.auth_provider === 'both')) {
+                    googlePicUrl = data.profile_picture;
+                    document.getElementById('googlePicPreview').src = googlePicUrl;
+                    document.getElementById('picSection').style.display = 'block';
+                }
+            } catch (err) {
+                console.error('Failed to load profile:', err);
+            }
+
+            // Radio button styling
+            document.querySelectorAll('input[name=usePic]').forEach(radio => {
+                radio.addEventListener('change', () => {
+                    document.getElementById('optYes').classList.toggle('selected', document.querySelector('[value=yes]').checked);
+                    document.getElementById('optNo').classList.toggle('selected', document.querySelector('[value=no]').checked);
+                });
+            });
+            document.getElementById('optYes').classList.add('selected');
+
+            document.getElementById('onboardingForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const firstName = document.getElementById('firstName').value.trim();
+                const lastName = document.getElementById('lastName').value.trim();
+                const errorDiv = document.getElementById('onboardingError');
+                const btn = e.target.querySelector('button[type=submit]');
+                errorDiv.style.display = 'none';
+
+                const keepPic = document.querySelector('input[name=usePic]:checked')?.value === 'yes';
+
+                const payload = {
+                    first_name: firstName,
+                    last_name: lastName,
+                    onboarding_completed: true
+                };
+
+                // If user said No to Google pic, clear it
+                if (googlePicUrl && !keepPic) {
+                    payload.profile_picture = '';
+                }
+
+                btn.innerText = 'Setting up...';
+                btn.disabled = true;
+
+                try {
+                    const res = await fetch(`${API_BASE}/profile`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+                        body: JSON.stringify(payload)
+                    });
+                    const resData = await res.json();
+                    if (!res.ok) throw new Error(resData.error || 'Failed to update profile');
+                    window.location.href = 'dashboard.html';
+                } catch (err) {
+                    errorDiv.textContent = err.message;
+                    errorDiv.style.display = 'block';
+                    btn.innerText = 'Complete Setup →';
+                    btn.disabled = false;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

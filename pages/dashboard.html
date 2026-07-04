@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - RepoMind Space</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="../js/config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="../js/theme.js"></script>
+</head>
+
+<body>
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar glass-panel"
+            style="margin: 1rem; padding: 1.5rem; display: flex; flex-direction: column;">
+            <div class="mb-5">
+                <a href="dashboard.html" class="navbar-brand" style="display: block;">RepoMind Space</a>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="sidebar-link active">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                    Dashboard
+                </a>
+                <a href="workspaces.html" class="sidebar-link">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    Workspaces
+                </a>
+                <a href="repository-chat.html" class="sidebar-link">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    Chats
+                </a>
+            </nav>
+            <!-- User Profile Area (Unified) -->
+            <div style="margin-top: auto; padding-top: 1.5rem; border-top: 1px solid var(--glass-border); display: flex; flex-direction: column; gap: 1rem;">
+                <a href="profile.html" style="display: flex; align-items: center; gap: 0.75rem; text-decoration: none; color: var(--text-main);">
+                    <div id="sidebar-avatar" style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #6366f1, #a855f7); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 0.9rem; overflow: hidden; flex-shrink: 0;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:60%;height:60%;color:rgba(255,255,255,0.8);"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+                    <div id="sidebar-greeting" style="font-size: 0.95rem; font-weight: 500;">Hello, there</div>
+                </a>
+                
+                <!-- Theme Switcher Pop-out -->
+                <div class="theme-switcher-container" style="background: var(--bg-dark); border: 1px solid var(--glass-border); border-radius: 8px; padding: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 0.8rem; color: var(--text-muted); padding-left: 0.25rem;">Theme</span>
+                    <div style="display: flex; gap: 0.25rem;">
+                        <button onclick="setThemeMode('system')" title="System Theme" class="theme-btn" data-theme-btn="system" style="background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 6px; border-radius: 6px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg></button>
+                        <button onclick="setThemeMode('light')" title="Light Theme" class="theme-btn" data-theme-btn="light" style="background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 6px; border-radius: 6px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg></button>
+                        <button onclick="setThemeMode('dark')" title="Dark Theme" class="theme-btn" data-theme-btn="dark" style="background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 6px; border-radius: 6px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg></button>
+                    </div>
+                </div>
+
+                <a href="#" class="sidebar-link" id="logoutBtn" style="color: #ef4444; margin-top: 0.5rem; padding: 0.5rem 0.75rem;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                    Logout
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="mb-5">
+                <h1>Dashboard Overview</h1>
+            </header>
+
+            <!-- Metrics Grid -->
+            <div class="grid grid-cols-4 mb-5">
+                <div class="card glow-card glass-panel" style="padding: 1.5rem;">
+                    <div class="metric-header">
+                        <h3 class="text-muted" style="font-size: 0.875rem;">Total Workspaces</h3>
+                        <div class="metric-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z">
+                                </path>
+                            </svg></div>
+                    </div>
+                    <p class="metric-value mb-0">0</p>
+                    <div class="trend-up">+0% this week</div>
+                </div>
+                <div class="card glow-card glass-panel" style="padding: 1.5rem;">
+                    <div class="metric-header">
+                        <h3 class="text-muted" style="font-size: 0.875rem;">Repos Processed</h3>
+                        <div class="metric-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg></div>
+                    </div>
+                    <p class="metric-value mb-0">0</p>
+                    <div class="trend-up">+0% this week</div>
+                </div>
+                <div class="card glow-card glass-panel" style="padding: 1.5rem;">
+                    <div class="metric-header">
+                        <h3 class="text-muted" style="font-size: 0.875rem;">Generated Artifacts</h3>
+                        <div class="metric-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                                <polyline points="10 9 9 9 8 9"></polyline>
+                            </svg></div>
+                    </div>
+                    <p class="metric-value mb-0">0</p>
+                    <div class="trend-up">+0% this week</div>
+                </div>
+                <div class="card glow-card glass-panel" style="padding: 1.5rem;">
+                    <div class="metric-header">
+                        <h3 class="text-muted" style="font-size: 0.875rem;">Total Chats</h3>
+                        <div class="metric-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                            </svg></div>
+                    </div>
+                    <p class="metric-value mb-0">0</p>
+                    <div class="trend-up">+0% this week</div>
+                </div>
+            </div>
+
+            <!-- Getting Started (Empty State) -->
+            <section id="gettingStartedSection"
+                style="background: rgba(30, 27, 46, 0.4); border: 1px dashed rgba(255,255,255,0.15); border-radius: 16px; padding: 4rem; text-align: center; margin-bottom: 3rem;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">🚀</div>
+                <h2 style="font-size: 2rem; font-weight: 600; color: var(--text-main); margin-bottom: 1rem;">Welcome to RepoMind
+                </h2>
+                <p
+                    style="color: var(--text-muted); font-size: 1.1rem; max-width: 500px; margin: 0 auto 2.5rem; line-height: 1.6;">
+                    Create your first workspace to start analyzing repositories, generating documentation, and chatting
+                    with your codebase.
+                </p>
+                <a href="create-workspace.html" class="btn btn-primary"
+                    style="text-decoration: none; padding: 0.8rem 2rem; font-size: 1rem; border-radius: 8px;">Create
+                    Workspace</a>
+            </section>
+
+            <!-- Feature Cards (Empty State) -->
+            <div id="gettingStartedFeatures"
+                style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 3rem;">
+                <div
+                    style="background: transparent; border: 1px solid var(--alpha-5); border-radius: 12px; padding: 1.5rem; transition: all 0.2s ease;">
+                    <div style="font-size: 1.5rem; margin-bottom: 1rem;">📁</div>
+                    <h4 style="color: var(--text-main); font-weight: 500; margin-bottom: 0.5rem; font-size: 1.05rem;">Repository
+                        Analysis</h4>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.5;">Understand repository
+                        structure and technologies.</p>
+                </div>
+                <div
+                    style="background: transparent; border: 1px solid var(--alpha-5); border-radius: 12px; padding: 1.5rem; transition: all 0.2s ease;">
+                    <div style="font-size: 1.5rem; margin-bottom: 1rem;">📄</div>
+                    <h4 style="color: var(--text-main); font-weight: 500; margin-bottom: 0.5rem; font-size: 1.05rem;">Documentation
+                        Generation</h4>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.5;">Generate README files,
+                        technical docs, and reports.</p>
+                </div>
+                <div
+                    style="background: transparent; border: 1px solid var(--alpha-5); border-radius: 12px; padding: 1.5rem; transition: all 0.2s ease;">
+                    <div style="font-size: 1.5rem; margin-bottom: 1rem;">🤖</div>
+                    <h4 style="color: var(--text-main); font-weight: 500; margin-bottom: 0.5rem; font-size: 1.05rem;">AI Repository
+                        Chat</h4>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.5;">Ask questions about
+                        architecture, code structure, and implementation.</p>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <section class="mb-5">
+                <h2 class="mb-4" style="font-size: 1.25rem;">⚡ Quick Actions</h2>
+                <div class="grid grid-cols-4">
+                    <a href="create-workspace.html" class="quick-action-card">
+                        <div class="quick-action-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z">
+                                </path>
+                            </svg></div>
+                        <h4 style="margin-bottom: 0.25rem;">Analyze Repository</h4>
+                        <span class="text-muted" style="font-size: 0.75rem;">Import and scan code</span>
+                    </a>
+                    <a href="generate-artifact.html" class="quick-action-card">
+                        <div class="quick-action-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                            </svg></div>
+                        <h4 style="margin-bottom: 0.25rem;">Generate Docs</h4>
+                        <span class="text-muted" style="font-size: 0.75rem;">Create technical docs</span>
+                    </a>
+                    <a href="generate-artifact.html" class="quick-action-card">
+                        <div class="quick-action-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                                <polyline points="2 17 12 22 22 17"></polyline>
+                                <polyline points="2 12 12 17 22 12"></polyline>
+                            </svg></div>
+                        <h4 style="margin-bottom: 0.25rem;">Architecture</h4>
+                        <span class="text-muted" style="font-size: 0.75rem;">Visualize structure</span>
+                    </a>
+                    <a href="repository-chat.html" class="quick-action-card">
+                        <div class="quick-action-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                            </svg></div>
+                        <h4 style="margin-bottom: 0.25rem;">Ask RepoMind</h4>
+                        <span class="text-muted" style="font-size: 0.75rem;">Chat with codebase</span>
+                    </a>
+                </div>
+            </section>
+
+            <!-- Weekly Chart -->
+            <section id="weeklyChartSection" class="card glass-panel mb-5" style="padding: 2.5rem; display: none;">
+                <h2 class="mb-4" style="font-size: 1.25rem;">📊 Artifacts Generated (Last 7 Days)</h2>
+                <div style="position: relative; height: 300px; width: 100%;">
+                    <canvas id="weeklyChart"></canvas>
+                </div>
+            </section>
+
+            <!-- Bottom Split: Activity & Repositories -->
+            <div class="grid grid-cols-2">
+                <section class="card glass-panel" style="padding: 2.5rem;">
+                    <h2 class="mb-4" style="font-size: 1.25rem;">Recent Activity</h2>
+                    <div id="recentActivityList">
+                        <!-- Empty State -->
+                        <div class="text-center" style="padding: 2rem 0;">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+                                style="color: var(--border-color); margin-bottom: 1rem;">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                            <p class="text-muted mb-0">No activity yet.<br>Create your first workspace to begin.</p>
+                        </div>
+                    </div>
+                </section>
+                <section class="card glass-panel" style="padding: 2.5rem;">
+                    <h2 class="mb-4" style="font-size: 1.25rem;">📁 Recent Workspaces</h2>
+                    <div id="recentReposList">
+                        <!-- Empty State -->
+                        <div class="text-center" style="padding: 2rem 0;">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+                                style="color: var(--border-color); margin-bottom: 1rem;">
+                                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z">
+                                </path>
+                            </svg>
+                            <p class="text-muted mb-0">No workspaces created yet.</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/auth.js"></script>
+    <script src="../js/user-profile.js"></script>
+    <script src="../js/workspace.js?v=4"></script>
+</body>
+
+</html>

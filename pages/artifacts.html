@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saved Artifacts - RepoMind Space</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        /* Modern Input Styling */
+        .search-input {
+            background: var(--glass-bg);
+            border: 1px solid var(--alpha-10);
+            color: var(--text-main);
+            padding: 12px 20px 12px 48px;
+            border-radius: 12px;
+            width: 350px;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(12px);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: rgba(168, 85, 247, 0.5);
+            box-shadow: 0 0 15px rgba(124, 58, 237, 0.2);
+            background: var(--glass-hover-bg);
+        }
+
+        .search-icon-wrapper {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        /* Glassmorphism Cards */
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--alpha-10);
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .glass-card:hover {
+            border-color: rgba(168, 85, 247, 0.4);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(124, 58, 237, 0.15);
+        }
+
+        /* Filter Tabs */
+        .filter-tabs {
+            display: flex;
+            gap: 1rem;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+        }
+
+        .filter-tab {
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-muted);
+            padding: 8px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .filter-tab:hover {
+            color: var(--text-main);
+            background: var(--alpha-5);
+        }
+
+        .filter-tab.active {
+            background: rgba(124, 58, 237, 0.2);
+            border-color: var(--primary-color);
+            color: var(--text-main);
+            box-shadow: 0 0 15px rgba(124, 58, 237, 0.2);
+        }
+
+        /* Populated Grid */
+        .artifact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 2rem;
+            display: none;
+            /* Hidden by default until artifacts exist */
+        }
+
+        .artifact-item-card {
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem;
+        }
+    </style>
+    <script src="../js/config.js"></script>
+    <script src="../js/theme.js"></script>
+</head>
+
+<body>
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="mb-4">
+                <a href="dashboard.html" class="navbar-brand" style="display: block;">RepoMind Space</a>
+            </div>
+            <div class="mb-4" style="padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
+                <span class="text-muted" style="font-size: 0.75rem; text-transform: uppercase;">Current Workspace</span>
+                <h3 style="font-size: 1.125rem;" id="workspaceNameHeader">Workspace Name</h3>
+            </div>
+            <nav class="sidebar-nav" style="margin-top: 0;">
+                <a href="workspace-detail.html" class="sidebar-link">Analysis Overview</a>
+                <a href="generate-artifact.html" class="sidebar-link">Generate Artifacts</a>
+                <a href="artifacts.html" class="sidebar-link active">Saved Artifacts</a>
+                <a href="repository-chat.html" class="sidebar-link">Repository Chat</a>
+            </nav>
+            <nav class="sidebar-nav" style="margin-top: auto;">
+                <a href="dashboard.html" class="sidebar-link">← Back to Dashboard</a>
+            </nav>
+
+            <!-- User Profile Area (Unified) -->
+            <div style="margin-top: auto; padding-top: 1.5rem; border-top: 1px solid var(--glass-border); display: flex; flex-direction: column; gap: 1rem;">
+                <a href="profile.html" style="display: flex; align-items: center; gap: 0.75rem; text-decoration: none; color: var(--text-main);">
+                    <div id="sidebar-avatar" style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #6366f1, #a855f7); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 0.9rem; overflow: hidden; flex-shrink: 0;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:60%;height:60%;color:rgba(255,255,255,0.8);"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+                    <div id="sidebar-greeting" style="font-size: 0.95rem; font-weight: 500;">Hello, there</div>
+                </a>
+                
+                <!-- Theme Switcher Pop-out -->
+                <div class="theme-switcher-container" style="background: var(--bg-dark); border: 1px solid var(--glass-border); border-radius: 8px; padding: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 0.8rem; color: var(--text-muted); padding-left: 0.25rem;">Theme</span>
+                    <div style="display: flex; gap: 0.25rem;">
+                        <button onclick="setThemeMode('system')" title="System Theme" class="theme-btn" data-theme-btn="system" style="background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 6px; border-radius: 6px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg></button>
+                        <button onclick="setThemeMode('light')" title="Light Theme" class="theme-btn" data-theme-btn="light" style="background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 6px; border-radius: 6px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg></button>
+                        <button onclick="setThemeMode('dark')" title="Dark Theme" class="theme-btn" data-theme-btn="dark" style="background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 6px; border-radius: 6px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg></button>
+                    </div>
+                </div>
+
+                <a href="#" class="sidebar-link" id="logoutBtn" style="color: #ef4444; margin-top: 0.5rem; padding: 0.5rem 0.75rem;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                    Logout
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content" style="padding: 3rem 4rem;">
+            <div style="max-width: 1400px; margin: 0 auto;">
+
+                <!-- HEADER & ACTION -->
+                <header
+                    style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 3rem;">
+                    <div>
+                        <h1 class="analysis-header-title">Saved Artifacts</h1>
+                        <p class="analysis-body-text" style="font-size: 1.125rem; margin-top: 0.5rem;">Manage all
+                            generated documents, tests, and reports for this repository.</p>
+                    </div>
+                    <a href="generate-artifact.html" class="action-btn-large primary"
+                        style="text-decoration: none; padding: 1rem 2rem; font-size: 1.125rem; font-weight: 600; border-radius: 12px; box-shadow: 0 0 20px rgba(124, 58, 237, 0.4);">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" style="margin-right: 8px;">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        Generate New Artifact
+                    </a>
+                </header>
+
+                <!-- STATISTICS ROW -->
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 3rem;">
+                    <div class="glass-card" style="padding: 1.5rem; display: flex; align-items: center; gap: 1rem;">
+                        <div
+                            style="background: rgba(124, 58, 237, 0.15); padding: 1rem; border-radius: 16px; color: #a855f7; border: 1px solid rgba(124, 58, 237, 0.3);">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                                <polyline points="10 9 9 9 8 9"></polyline>
+                            </svg>
+                        </div>
+                        <div>
+                            <div
+                                style="color: var(--text-muted); font-size: 0.875rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">
+                                Total Artifacts</div>
+                            <div id="countTotal" style="font-size: 1.75rem; font-weight: 700; color: var(--text-main);">0</div>
+                        </div>
+                    </div>
+                    <div class="glass-card" style="padding: 1.5rem; display: flex; align-items: center; gap: 1rem;">
+                        <div
+                            style="background: rgba(59, 130, 246, 0.15); padding: 1rem; border-radius: 16px; color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3);">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <div
+                                style="color: var(--text-muted); font-size: 0.875rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">
+                                Documentation</div>
+                            <div id="countDocs" style="font-size: 1.75rem; font-weight: 700; color: var(--text-main);">0</div>
+                        </div>
+                    </div>
+                    <div class="glass-card" style="padding: 1.5rem; display: flex; align-items: center; gap: 1rem;">
+                        <div
+                            style="background: rgba(16, 185, 129, 0.15); padding: 1rem; border-radius: 16px; color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3);">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                                <polyline points="10 9 9 9 8 9"></polyline>
+                            </svg>
+                        </div>
+                        <div>
+                            <div
+                                style="color: var(--text-muted); font-size: 0.875rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">
+                                Reports</div>
+                            <div id="countReports" style="font-size: 1.75rem; font-weight: 700; color: var(--text-main);">0</div>
+                        </div>
+                    </div>
+                    <div class="glass-card" style="padding: 1.5rem; display: flex; align-items: center; gap: 1rem;">
+                        <div
+                            style="background: rgba(245, 158, 11, 0.15); padding: 1rem; border-radius: 16px; color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3);">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                            </svg>
+                        </div>
+                        <div>
+                            <div
+                                style="color: var(--text-muted); font-size: 0.875rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">
+                                Test Cases</div>
+                            <div id="countTests" style="font-size: 1.75rem; font-weight: 700; color: var(--text-main);">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TOOLBAR -->
+                <div
+                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem; background: rgba(0,0,0,0.15); padding: 1rem; border-radius: 16px; border: 1px solid var(--alpha-5);">
+                    <div class="filter-tabs">
+                        <button class="filter-tab active">All</button>
+                        <button class="filter-tab">README</button>
+                        <button class="filter-tab">Docs</button>
+                        <button class="filter-tab">Tests</button>
+                        <button class="filter-tab">Reports</button>
+                        <button class="filter-tab">User Stories</button>
+                    </div>
+                    <div style="position: relative;">
+                        <div class="search-icon-wrapper">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                        </div>
+                        <input type="text" class="search-input" placeholder="Search saved artifacts...">
+                    </div>
+                </div>
+
+                <!-- EMPTY STATE HERO (Default View) -->
+                <div id="emptyStateContainer">
+                    <div class="glass-card"
+                        style="padding: 5rem 4rem; text-align: center; margin-bottom: 4rem; position: relative; overflow: hidden; border-color: rgba(168, 85, 247, 0.3);">
+                        <div
+                            style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 600px; height: 600px; background: radial-gradient(circle, rgba(168, 85, 247, 0.1) 0%, transparent 70%); pointer-events: none;">
+                        </div>
+
+                        <div
+                            style="font-size: 5rem; margin-bottom: 1.5rem; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.3));">
+                            📁</div>
+                        <h2 style="font-size: 2.5rem; font-weight: 700; color: var(--text-main); margin-bottom: 1rem;">No Artifacts
+                            Yet</h2>
+                        <p
+                            style="color: var(--text-muted); font-size: 1.25rem; max-width: 600px; margin: 0 auto 3rem; line-height: 1.6;">
+                            Generate your first AI-powered artifact from this repository. RepoMind uses deep contextual
+                            understanding to instantly create high-quality project assets.
+                        </p>
+
+                        <div
+                            style="display: flex; justify-content: center; gap: 2rem; margin-bottom: 3rem; text-align: left;">
+                            <div
+                                style="background: rgba(0,0,0,0.2); border: 1px solid var(--alpha-5); padding: 1.5rem 2.5rem; border-radius: 16px;">
+                                <h4 style="color: var(--text-main); font-weight: 600; margin-bottom: 1rem; font-size: 1.125rem;">
+                                    RepoMind can create:</h4>
+                                <ul style="list-style: none; padding: 0; margin: 0;">
+                                    <li
+                                        style="color: var(--text-muted); margin-bottom: 0.75rem; display: flex; align-items: center;">
+                                        <span style="color: var(--success); margin-right: 12px;">✓</span> README
+                                        Documentation</li>
+                                    <li
+                                        style="color: var(--text-muted); margin-bottom: 0.75rem; display: flex; align-items: center;">
+                                        <span style="color: var(--success); margin-right: 12px;">✓</span> Technical Docs
+                                    </li>
+                                    <li
+                                        style="color: var(--text-muted); margin-bottom: 0.75rem; display: flex; align-items: center;">
+                                        <span style="color: var(--success); margin-right: 12px;">✓</span> User Stories
+                                    </li>
+                                    <li
+                                        style="color: var(--text-muted); margin-bottom: 0.75rem; display: flex; align-items: center;">
+                                        <span style="color: var(--success); margin-right: 12px;">✓</span> Test Cases
+                                    </li>
+                                    <li style="color: var(--text-muted); display: flex; align-items: center;"><span
+                                            style="color: var(--success); margin-right: 12px;">✓</span> Bug Analysis
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; justify-content: center; gap: 1.5rem;">
+                            <a href="generate-artifact.html" class="action-btn-large primary"
+                                style="text-decoration: none; padding: 1rem 2.5rem; font-size: 1.125rem;">Generate
+                                Artifact</a>
+                            <a href="workspace-detail.html" class="action-btn-large"
+                                style="text-decoration: none; padding: 1rem 2.5rem; font-size: 1.125rem; background: var(--alpha-5); border: 1px solid var(--alpha-10); color: var(--text-main);">View
+                                Analysis</a>
+                        </div>
+                    </div>
+
+                    <!-- RECOMMENDED ARTIFACTS GRID (Shown when empty) -->
+                    <div style="margin-bottom: 2rem;">
+                        <h3 style="font-size: 1.5rem; font-weight: 600; color: var(--text-main); margin-bottom: 1.5rem;">
+                            Recommended Artifacts</h3>
+                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem;">
+                            <div class="glass-card" style="padding: 1.5rem; text-align: center;">
+                                <div style="font-size: 2.5rem; margin-bottom: 1rem;">📘</div>
+                                <h4 style="color: var(--text-main); font-weight: 600; margin-bottom: 0.5rem; font-size: 1.125rem;">
+                                    README</h4>
+                                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">Complete
+                                    project setup and usage guide.</p>
+                                <a href="generate-artifact.html" class="tech-pill"
+                                    style="text-decoration: none; display: inline-block; padding: 8px 20px; border: 1px solid rgba(168, 85, 247, 0.5); color: #c4b5fd;">Generate</a>
+                            </div>
+                            <div class="glass-card" style="padding: 1.5rem; text-align: center;">
+                                <div style="font-size: 2.5rem; margin-bottom: 1rem;">🧩</div>
+                                <h4 style="color: var(--text-main); font-weight: 600; margin-bottom: 0.5rem; font-size: 1.125rem;">
+                                    Technical Docs</h4>
+                                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">
+                                    Architecture and API documentation.</p>
+                                <a href="generate-artifact.html" class="tech-pill"
+                                    style="text-decoration: none; display: inline-block; padding: 8px 20px; border: 1px solid rgba(168, 85, 247, 0.5); color: #c4b5fd;">Generate</a>
+                            </div>
+                            <div class="glass-card" style="padding: 1.5rem; text-align: center;">
+                                <div style="font-size: 2.5rem; margin-bottom: 1rem;">🧪</div>
+                                <h4 style="color: var(--text-main); font-weight: 600; margin-bottom: 0.5rem; font-size: 1.125rem;">
+                                    Test Cases</h4>
+                                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">Unit
+                                    tests and functional scenarios.</p>
+                                <a href="generate-artifact.html" class="tech-pill"
+                                    style="text-decoration: none; display: inline-block; padding: 8px 20px; border: 1px solid rgba(168, 85, 247, 0.5); color: #c4b5fd;">Generate</a>
+                            </div>
+                            <div class="glass-card" style="padding: 1.5rem; text-align: center;">
+                                <div style="font-size: 2.5rem; margin-bottom: 1rem;">🐞</div>
+                                <h4 style="color: var(--text-main); font-weight: 600; margin-bottom: 0.5rem; font-size: 1.125rem;">
+                                    Bug Analysis</h4>
+                                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">Code
+                                    smells and risk assessment.</p>
+                                <a href="generate-artifact.html" class="tech-pill"
+                                    style="text-decoration: none; display: inline-block; padding: 8px 20px; border: 1px solid rgba(168, 85, 247, 0.5); color: #c4b5fd;">Generate</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- POPULATED GRID (Hidden until artifacts exist) -->
+                <!-- We keep this here so the layout is ready when dynamic artifacts are loaded -->
+                <div id="populatedGridContainer" class="artifact-grid">
+                    <!-- Example Populated Card (Static for demonstration) -->
+                    <!--
+                    <div class="glass-card artifact-item-card">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <span style="font-size: 1.5rem;">📘</span>
+                                <span class="tech-pill" style="background: rgba(124, 58, 237, 0.15); color: #c4b5fd; border: none;">Documentation</span>
+                            </div>
+                            <span style="color: var(--text-muted); font-size: 0.8rem;">Just now</span>
+                        </div>
+                        <h3 style="color: var(--text-main); font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem;">Main README.md</h3>
+                        <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.5; margin-bottom: 1.5rem; flex-grow: 1;">
+                            Complete project setup instructions and feature overview.
+                        </p>
+                        <div style="display: flex; gap: 0.5rem; border-top: 1px solid var(--alpha-5); padding-top: 1rem;">
+                            <button class="tech-pill" style="flex: 1; justify-content: center; background: var(--alpha-5); border-color: var(--alpha-10); color: var(--text-main);">View</button>
+                            <button class="tech-pill" style="flex: 1; justify-content: center; background: var(--alpha-5); border-color: var(--alpha-10); color: var(--text-main);">Download</button>
+                            <button class="tech-pill" style="padding: 8px 12px; background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.2); color: #ef4444;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+                    -->
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/auth.js"></script>
+    <script src="../js/user-profile.js"></script>
+    <script src="../js/analysis.js"></script>
+    <script src="../js/artifacts.js"></script>
+    <script>
+        // Simple script to handle filter tab active states
+        document.querySelectorAll('.filter-tab').forEach(tab => {
+            tab.addEventListener('click', function () {
+                document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

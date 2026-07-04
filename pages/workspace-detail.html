@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workspace Detail - RepoMind Space</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="../js/config.js"></script>
+    <script src="../js/theme.js"></script>
+</head>
+
+<body>
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <!-- Sidebar -->
+        <aside class="sidebar glass-panel"
+            style="margin: 1rem; padding: 1.5rem; display: flex; flex-direction: column;">
+            <div class="mb-5">
+                <a href="dashboard.html" class="navbar-brand" style="display: block;">RepoMind Space</a>
+            </div>
+            <div class="mb-4" style="padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
+                <span class="text-muted" style="font-size: 0.75rem; text-transform: uppercase;">Current Workspace</span>
+                <h3 style="font-size: 1.125rem;" id="workspaceNameHeader">Workspace Name</h3>
+            </div>
+            <nav class="sidebar-nav" style="margin-top: 0;">
+                <a href="workspace-detail.html" class="sidebar-link active">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path
+                            d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z">
+                        </path>
+                        <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                        <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                    </svg>
+                    Analysis Overview
+                </a>
+                <a href="generate-artifact.html" class="sidebar-link">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                    </svg>
+                    Generate Artifacts
+                </a>
+                <a href="artifacts.html" class="sidebar-link">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg>
+                    Saved Artifacts
+                </a>
+                <a href="repository-chat.html" class="sidebar-link">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    Repository Chat
+                </a>
+            </nav>
+            <nav class="sidebar-nav" style="margin-top: auto;">
+                <a href="dashboard.html" class="sidebar-link">← Back to Dashboard</a>
+            </nav>
+            <!-- User Profile Area (Unified) -->
+            <div style="margin-top: auto; padding-top: 1.5rem; border-top: 1px solid var(--glass-border); display: flex; flex-direction: column; gap: 1rem;">
+                <a href="profile.html" style="display: flex; align-items: center; gap: 0.75rem; text-decoration: none; color: var(--text-main);">
+                    <div id="sidebar-avatar" style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #6366f1, #a855f7); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 0.9rem; overflow: hidden; flex-shrink: 0;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:60%;height:60%;color:rgba(255,255,255,0.8);"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+                    <div id="sidebar-greeting" style="font-size: 0.95rem; font-weight: 500;">Hello, there</div>
+                </a>
+                
+                <!-- Theme Switcher Pop-out -->
+                <div class="theme-switcher-container" style="background: var(--bg-dark); border: 1px solid var(--glass-border); border-radius: 8px; padding: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 0.8rem; color: var(--text-muted); padding-left: 0.25rem;">Theme</span>
+                    <div style="display: flex; gap: 0.25rem;">
+                        <button onclick="setThemeMode('system')" title="System Theme" class="theme-btn" data-theme-btn="system" style="background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 6px; border-radius: 6px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg></button>
+                        <button onclick="setThemeMode('light')" title="Light Theme" class="theme-btn" data-theme-btn="light" style="background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 6px; border-radius: 6px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg></button>
+                        <button onclick="setThemeMode('dark')" title="Dark Theme" class="theme-btn" data-theme-btn="dark" style="background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 6px; border-radius: 6px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg></button>
+                    </div>
+                </div>
+
+                <a href="#" class="sidebar-link" id="logoutBtn" style="color: #ef4444; margin-top: 0.5rem; padding: 0.5rem 0.75rem;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                    Logout
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content" style="padding: 2rem 3rem;">
+            <div style="max-width: 1200px; margin: 0;">
+                <header style="margin-bottom: 2.5rem; display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div>
+                        <h1 style="font-size: 2.25rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.5rem;">Repository
+                            Analysis</h1>
+                        <p style="color: var(--text-muted); font-size: 1.125rem;">High-level understanding generated by the
+                            analysis engine.</p>
+                    </div>
+                    <button id="deleteWorkspaceBtn" class="btn btn-secondary" style="border-color: #ef4444; color: #ef4444; background: rgba(239, 68, 68, 0.1); padding: 0.75rem 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 1.25rem; height: 1.25rem;"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                        Delete Workspace
+                    </button>
+                </header>
+
+                <!-- Row 1: Summary and Stack -->
+                <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                    <!-- Repository Summary -->
+                    <div style="background: linear-gradient(145deg, rgba(168, 85, 247, 0.1) 0%, var(--glass-hover-bg) 100%); border-radius: 16px; padding: 2.5rem; box-shadow: 0 8px 24px rgba(0,0,0,0.2), inset 0 1px 1px var(--alpha-5); border: 1px solid rgba(168, 85, 247, 0.15); transition: all 0.3s ease; position: relative; overflow: hidden;"
+                        onmouseover="this.style.borderColor='rgba(168, 85, 247, 0.4)'; this.style.boxShadow='0 12px 32px rgba(0,0,0,0.3), inset 0 1px 1px var(--alpha-10)'; this.style.transform='translateY(-4px)'"
+                        onmouseout="this.style.borderColor='rgba(168, 85, 247, 0.15)'; this.style.boxShadow='0 8px 24px rgba(0,0,0,0.2), inset 0 1px 1px var(--alpha-5)'; this.style.transform='translateY(0)'">
+                        <div
+                            style="position: absolute; top: -50px; left: -50px; width: 100px; height: 100px; background: rgba(168, 85, 247, 0.15); filter: blur(40px); border-radius: 50%;">
+                        </div>
+                        <h2
+                            style="font-size: 1.25rem; font-weight: 700; color: var(--text-main); margin-bottom: 1.25rem; position: relative; z-index: 1;">
+                            Repository Summary</h2>
+                        <p style="color: var(--text-muted); font-size: 1.05rem; line-height: 1.7; position: relative; z-index: 1;"
+                            id="summaryText">
+                            -
+                        </p>
+                    </div>
+
+                    <!-- Technology Stack -->
+                    <div style="background: linear-gradient(145deg, rgba(168, 85, 247, 0.1) 0%, var(--glass-hover-bg) 100%); border-radius: 16px; padding: 2.5rem; box-shadow: 0 8px 24px rgba(0,0,0,0.2), inset 0 1px 1px var(--alpha-5); border: 1px solid rgba(168, 85, 247, 0.15); transition: all 0.3s ease; position: relative; overflow: hidden;"
+                        onmouseover="this.style.borderColor='rgba(168, 85, 247, 0.4)'; this.style.boxShadow='0 12px 32px rgba(0,0,0,0.3), inset 0 1px 1px var(--alpha-10)'; this.style.transform='translateY(-4px)'"
+                        onmouseout="this.style.borderColor='rgba(168, 85, 247, 0.15)'; this.style.boxShadow='0 8px 24px rgba(0,0,0,0.2), inset 0 1px 1px var(--alpha-5)'; this.style.transform='translateY(0)'">
+                        <div
+                            style="position: absolute; top: -50px; left: -50px; width: 100px; height: 100px; background: rgba(168, 85, 247, 0.15); filter: blur(40px); border-radius: 50%;">
+                        </div>
+                        <h2
+                            style="font-size: 1.25rem; font-weight: 700; color: var(--text-main); margin-bottom: 1.25rem; position: relative; z-index: 1;">
+                            Technology Stack</h2>
+                        <!-- Stack items can be injected here -->
+                    </div>
+                </div>
+
+                <!-- Row 2: Metrics -->
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 1.5rem;">
+                    <!-- Total Files -->
+                    <div style="background: linear-gradient(145deg, rgba(168, 85, 247, 0.1) 0%, var(--glass-hover-bg) 100%); border-radius: 16px; padding: 2.5rem; box-shadow: 0 8px 24px rgba(0,0,0,0.2), inset 0 1px 1px var(--alpha-5); border: 1px solid rgba(168, 85, 247, 0.15); transition: all 0.3s ease; position: relative; overflow: hidden;"
+                        onmouseover="this.style.borderColor='rgba(168, 85, 247, 0.4)'; this.style.boxShadow='0 12px 32px rgba(0,0,0,0.3), inset 0 1px 1px var(--alpha-10)'; this.style.transform='translateY(-4px)'"
+                        onmouseout="this.style.borderColor='rgba(168, 85, 247, 0.15)'; this.style.boxShadow='0 8px 24px rgba(0,0,0,0.2), inset 0 1px 1px var(--alpha-5)'; this.style.transform='translateY(0)'">
+                        <div
+                            style="position: absolute; bottom: -50px; right: -50px; width: 100px; height: 100px; background: rgba(168, 85, 247, 0.15); filter: blur(40px); border-radius: 50%;">
+                        </div>
+                        <h3
+                            style="font-size: 1.125rem; font-weight: 600; color: var(--text-muted); margin-bottom: 1rem; position: relative; z-index: 1;">
+                            Total Files</h3>
+                        <div id="metricTotalFiles"
+                            style="font-size: 2.5rem; font-weight: 800; color: var(--text-main); position: relative; z-index: 1; text-shadow: 0 0 10px var(--alpha-10);">
+                            -</div>
+                    </div>
+
+                    <!-- API Endpoints -->
+                    <div style="background: linear-gradient(145deg, rgba(168, 85, 247, 0.1) 0%, var(--glass-hover-bg) 100%); border-radius: 16px; padding: 2.5rem; box-shadow: 0 8px 24px rgba(0,0,0,0.2), inset 0 1px 1px var(--alpha-5); border: 1px solid rgba(168, 85, 247, 0.15); transition: all 0.3s ease; position: relative; overflow: hidden;"
+                        onmouseover="this.style.borderColor='rgba(168, 85, 247, 0.4)'; this.style.boxShadow='0 12px 32px rgba(0,0,0,0.3), inset 0 1px 1px var(--alpha-10)'; this.style.transform='translateY(-4px)'"
+                        onmouseout="this.style.borderColor='rgba(168, 85, 247, 0.15)'; this.style.boxShadow='0 8px 24px rgba(0,0,0,0.2), inset 0 1px 1px var(--alpha-5)'; this.style.transform='translateY(0)'">
+                        <div
+                            style="position: absolute; bottom: -50px; right: -50px; width: 100px; height: 100px; background: rgba(168, 85, 247, 0.15); filter: blur(40px); border-radius: 50%;">
+                        </div>
+                        <h3
+                            style="font-size: 1.125rem; font-weight: 600; color: var(--text-muted); margin-bottom: 1rem; position: relative; z-index: 1;">
+                            API Endpoints</h3>
+                        <div id="metricApiEndpoints"
+                            style="font-size: 2.5rem; font-weight: 800; color: var(--text-main); position: relative; z-index: 1; text-shadow: 0 0 10px var(--alpha-10);">
+                            -</div>
+                    </div>
+
+                    <!-- Detected Modules -->
+                    <div style="background: linear-gradient(145deg, rgba(168, 85, 247, 0.1) 0%, var(--glass-hover-bg) 100%); border-radius: 16px; padding: 2.5rem; box-shadow: 0 8px 24px rgba(0,0,0,0.2), inset 0 1px 1px var(--alpha-5); border: 1px solid rgba(168, 85, 247, 0.15); transition: all 0.3s ease; position: relative; overflow: hidden;"
+                        onmouseover="this.style.borderColor='rgba(168, 85, 247, 0.4)'; this.style.boxShadow='0 12px 32px rgba(0,0,0,0.3), inset 0 1px 1px var(--alpha-10)'; this.style.transform='translateY(-4px)'"
+                        onmouseout="this.style.borderColor='rgba(168, 85, 247, 0.15)'; this.style.boxShadow='0 8px 24px rgba(0,0,0,0.2), inset 0 1px 1px var(--alpha-5)'; this.style.transform='translateY(0)'">
+                        <div
+                            style="position: absolute; bottom: -50px; right: -50px; width: 100px; height: 100px; background: rgba(168, 85, 247, 0.15); filter: blur(40px); border-radius: 50%;">
+                        </div>
+                        <h3
+                            style="font-size: 1.125rem; font-weight: 600; color: var(--text-muted); margin-bottom: 1rem; position: relative; z-index: 1;">
+                            Detected Modules</h3>
+                        <div id="metricDetectedModules"
+                            style="font-size: 2.5rem; font-weight: 800; color: var(--text-main); position: relative; z-index: 1; text-shadow: 0 0 10px var(--alpha-10);">
+                            -</div>
+                    </div>
+                </div>
+
+                <!-- Row 3: Folder Structure -->
+                <div style="background: linear-gradient(145deg, rgba(168, 85, 247, 0.1) 0%, var(--glass-hover-bg) 100%); border-radius: 16px; padding: 2.5rem; box-shadow: 0 8px 24px rgba(0,0,0,0.2), inset 0 1px 1px var(--alpha-5); border: 1px solid rgba(168, 85, 247, 0.15); transition: all 0.3s ease; position: relative; overflow: hidden;"
+                    onmouseover="this.style.borderColor='rgba(168, 85, 247, 0.4)'; this.style.boxShadow='0 12px 32px rgba(0,0,0,0.3), inset 0 1px 1px var(--alpha-10)'; this.style.transform='translateY(-4px)'"
+                    onmouseout="this.style.borderColor='rgba(168, 85, 247, 0.15)'; this.style.boxShadow='0 8px 24px rgba(0,0,0,0.2), inset 0 1px 1px var(--alpha-5)'; this.style.transform='translateY(0)'">
+                    <div
+                        style="position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 300px; height: 50px; background: rgba(168, 85, 247, 0.1); filter: blur(50px); border-radius: 50%;">
+                    </div>
+                    <h2
+                        style="font-size: 1.25rem; font-weight: 700; color: var(--text-main); margin-bottom: 1.5rem; position: relative; z-index: 1;">
+                        Folder Structure Overview</h2>
+                    <div
+                        style="background: rgba(10, 8, 16, 0.8); border-radius: 12px; padding: 1.5rem; border: 1px solid rgba(168, 85, 247, 0.15); box-shadow: inset 0 2px 10px rgba(0,0,0,0.4); position: relative; z-index: 1;">
+                        <pre
+                            style="font-family: 'Fira Code', 'Courier New', Courier, monospace; font-size: 0.9rem; color: #c4b5fd; margin: 0; line-height: 1.6;">Loading folder structure...</pre>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/analysis.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/user-profile.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const deleteBtn = document.getElementById('deleteWorkspaceBtn');
+            if (deleteBtn) {
+                deleteBtn.addEventListener('click', async () => {
+                    const workspaceId = localStorage.getItem('currentWorkspaceId');
+                    if (!workspaceId) {
+                        alert('No workspace selected.');
+                        return;
+                    }
+                    
+                    if (confirm('Are you sure you want to delete this workspace? This action cannot be undone.')) {
+                        const token = localStorage.getItem('token');
+                        deleteBtn.disabled = true;
+                        deleteBtn.innerText = 'Deleting...';
+                        
+                        try {
+                            const res = await fetch(`${API_BASE}/api/workspace/${workspaceId}`, {
+                                method: 'DELETE',
+                                headers: {
+                                    'Authorization': `Bearer ${token}`
+                                }
+                            });
+                            
+                            if (res.ok) {
+                                alert('Workspace deleted successfully.');
+                                localStorage.removeItem('currentWorkspaceId');
+                                window.location.href = 'dashboard.html';
+                            } else {
+                                const data = await res.json();
+                                throw new Error(data.error || 'Failed to delete workspace');
+                            }
+                        } catch (err) {
+                            alert(err.message);
+                            deleteBtn.disabled = false;
+                            deleteBtn.innerText = 'Delete Workspace';
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

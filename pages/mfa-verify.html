@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two-Factor Authentication - RepoMind Space</title>
+    <meta name="description" content="Verify your identity with two-factor authentication to access RepoMind Space.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="../js/config.js"></script>
+    <script src="../js/theme.js"></script>
+    <style>
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .mfa-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 3rem;
+            width: 100%;
+            max-width: 440px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+        }
+
+        .mfa-icon {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2));
+            border: 1px solid rgba(168, 85, 247, 0.4);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+        }
+
+        .code-inputs {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: center;
+            margin: 2rem 0;
+        }
+
+        .code-digit {
+            width: 52px;
+            height: 60px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            font-family: 'Inter', monospace;
+            background: var(--bg-dark);
+            border: 2px solid var(--glass-border);
+            border-radius: 10px;
+            color: var(--text-main);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            caret-color: var(--primary-color);
+        }
+
+        .code-digit:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.2);
+        }
+
+        .code-digit.filled {
+            border-color: rgba(168, 85, 247, 0.5);
+        }
+
+        .error-msg {
+            color: #ef4444;
+            font-size: 0.875rem;
+            text-align: center;
+            margin-bottom: 1rem;
+            display: none;
+            padding: 0.75rem 1rem;
+            background: rgba(239, 68, 68, 0.1);
+            border-radius: 8px;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .back-link {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-top: 1.5rem;
+            justify-content: center;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover {
+            color: var(--text-main);
+        }
+    </style>
+</head>
+<body>
+    <div class="mfa-card">
+        <div class="mfa-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="5" y="11" width="14" height="10" rx="2" ry="2"></rect>
+                <path d="M8 11V7a4 4 0 0 1 8 0v4"></path>
+                <circle cx="12" cy="16" r="1"></circle>
+            </svg>
+        </div>
+
+        <h1 style="text-align: center; font-size: 1.75rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.5rem;">
+            Two-Factor Authentication
+        </h1>
+        <p style="text-align: center; color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 0.5rem;">
+            Open your authenticator app and enter the 6-digit code for <strong style="color: var(--text-main);">RepoMind Space</strong>.
+        </p>
+
+        <div class="code-inputs">
+            <input type="text" class="code-digit" id="d0" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="one-time-code">
+            <input type="text" class="code-digit" id="d1" maxlength="1" inputmode="numeric" pattern="[0-9]">
+            <input type="text" class="code-digit" id="d2" maxlength="1" inputmode="numeric" pattern="[0-9]">
+            <input type="text" class="code-digit" id="d3" maxlength="1" inputmode="numeric" pattern="[0-9]">
+            <input type="text" class="code-digit" id="d4" maxlength="1" inputmode="numeric" pattern="[0-9]">
+            <input type="text" class="code-digit" id="d5" maxlength="1" inputmode="numeric" pattern="[0-9]">
+        </div>
+
+        <div id="mfaError" class="error-msg"></div>
+
+        <button id="verifyBtn" class="btn btn-primary" style="width: 100%; padding: 0.875rem; font-size: 1rem;" disabled>
+            Verify Code
+        </button>
+
+        <a href="login.html" class="back-link" id="backToLogin" onclick="sessionStorage.removeItem('mfa_pre_token')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 12H5M5 12l7 7M5 12l7-7"></path>
+            </svg>
+            Back to login
+        </a>
+    </div>
+
+    <script>
+        const API_BASE = `${API_BASE}/api/auth`;
+        const digits = Array.from(document.querySelectorAll('.code-digit'));
+        const verifyBtn = document.getElementById('verifyBtn');
+        const errorDiv = document.getElementById('mfaError');
+
+        // Redirect to login if no pre-token present
+        const preToken = sessionStorage.getItem('mfa_pre_token');
+        if (!preToken) {
+            window.location.href = 'login.html';
+        }
+
+        function getCode() {
+            return digits.map(d => d.value).join('');
+        }
+
+        function updateBtn() {
+            const code = getCode();
+            verifyBtn.disabled = code.length !== 6 || !/^\d{6}$/.test(code);
+        }
+
+        // Auto-advance on digit input, support paste, backspace
+        digits.forEach((input, i) => {
+            input.addEventListener('input', (e) => {
+                // Handle paste of full code into first input
+                const val = e.target.value;
+                if (val.length > 1) {
+                    const cleaned = val.replace(/\D/g, '').slice(0, 6);
+                    cleaned.split('').forEach((ch, j) => {
+                        if (digits[j]) {
+                            digits[j].value = ch;
+                            digits[j].classList.add('filled');
+                        }
+                    });
+                    const next = Math.min(cleaned.length, 5);
+                    digits[next].focus();
+                    updateBtn();
+                    return;
+                }
+                if (val && /\d/.test(val)) {
+                    input.classList.add('filled');
+                    if (i < 5) digits[i + 1].focus();
+                } else {
+                    input.value = '';
+                    input.classList.remove('filled');
+                }
+                updateBtn();
+            });
+
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace') {
+                    if (input.value === '' && i > 0) {
+                        digits[i - 1].value = '';
+                        digits[i - 1].classList.remove('filled');
+                        digits[i - 1].focus();
+                    } else {
+                        input.value = '';
+                        input.classList.remove('filled');
+                    }
+                    updateBtn();
+                }
+                if (e.key === 'Enter' && !verifyBtn.disabled) {
+                    verifyBtn.click();
+                }
+            });
+
+            // Prevent non-digit chars
+            input.addEventListener('keypress', (e) => {
+                if (!/\d/.test(e.key)) e.preventDefault();
+            });
+        });
+
+        digits[0].focus();
+
+        verifyBtn.addEventListener('click', async () => {
+            const code = getCode();
+            const preToken = sessionStorage.getItem('mfa_pre_token');
+
+            if (!preToken) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            verifyBtn.innerText = 'Verifying...';
+            verifyBtn.disabled = true;
+            errorDiv.style.display = 'none';
+
+            try {
+                const res = await fetch(`${API_BASE}/mfa/verify`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pre_token: preToken, code })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    sessionStorage.removeItem('mfa_pre_token');
+                    localStorage.setItem('token', data.token);
+                    if (data.user && data.user.onboarding_completed === false) {
+                        window.location.href = 'onboarding.html';
+                    } else {
+                        window.location.href = 'dashboard.html';
+                    }
+                } else {
+                    errorDiv.textContent = data.error || 'Invalid code. Please try again.';
+                    errorDiv.style.display = 'block';
+                    // Clear inputs and re-focus
+                    digits.forEach(d => { d.value = ''; d.classList.remove('filled'); });
+                    digits[0].focus();
+                    verifyBtn.innerText = 'Verify Code';
+                    updateBtn();
+                }
+            } catch (err) {
+                errorDiv.textContent = 'Network error. Please try again.';
+                errorDiv.style.display = 'block';
+                verifyBtn.innerText = 'Verify Code';
+                updateBtn();
+            }
+        });
+    </script>
+</body>
+</html>

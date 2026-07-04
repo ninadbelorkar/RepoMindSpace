@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RepoMind Space - AI-Powered Repository Intelligence</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .hero {
+            padding: 8rem 0;
+            text-align: center;
+        }
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(to right, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto 2.5rem;
+        }
+        .features {
+            padding: 4rem 0;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar container">
+        <a href="index.html" class="navbar-brand">RepoMind Space</a>
+        <div id="nav-unauth" class="navbar-nav">
+            <a href="pages/login.html" class="btn btn-secondary" style="width: 110px;">Login</a>
+            <a href="pages/register.html" class="btn btn-primary" style="width: 110px;">Sign Up</a>
+        </div>
+        <div id="nav-auth" class="navbar-nav" style="display: none; align-items: center; gap: 1rem;">
+            <a href="pages/dashboard.html" class="btn btn-primary" style="padding: 0.5rem 1.25rem;">Dashboard</a>
+        </div>
+    </nav>
+
+    <main class="container">
+        <section class="hero">
+            <h1>Understand Repositories in Seconds</h1>
+            <p>Your centralized workspace for AI-powered repository intelligence. Automatically generate documentation, tests, user stories, and chat with your codebase.</p>
+            <div style="display: flex; gap: 1rem; justify-content: center;">
+                <a href="pages/register.html" class="btn btn-primary hero-btn" style="padding: 1rem 2rem; font-size: 1.125rem; transition: transform 0.2s ease, box-shadow 0.2s ease;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 10px 25px rgba(99, 102, 241, 0.4)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">Get Started Free</a>
+
+            </div>
+        </section>
+
+        <section id="features" class="features grid grid-cols-3">
+            <div class="card text-center animate-fade-up delay-100">
+                <h3 class="mb-2">Auto-Documentation</h3>
+                <p class="text-muted">Generate comprehensive READMEs and technical docs instantly.</p>
+            </div>
+            <div class="card text-center animate-fade-up delay-200">
+                <h3 class="mb-2">Smart Generation</h3>
+                <p class="text-muted">Create user stories, test cases, and bug reports from your code.</p>
+            </div>
+            <div class="card text-center animate-fade-up delay-300">
+                <h3 class="mb-2">Repository Chat</h3>
+                <p class="text-muted">Ask questions about your codebase and get context-aware answers.</p>
+            </div>
+        </section>
+    </main>
+
+    <script src="js/config.js"></script>
+    <script>
+        // Check if user is logged in
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('token');
+            if (token) {
+                document.getElementById('nav-unauth').style.display = 'none';
+                document.getElementById('nav-auth').style.display = 'flex';
+            }
+        });
+    </script>
+</body>
+</html>

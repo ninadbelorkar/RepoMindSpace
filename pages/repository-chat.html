@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Repository Chat - RepoMind Space</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        /* Two Column Layout */
+        .chat-grid {
+            display: grid;
+            grid-template-columns: 3fr 1fr;
+            gap: 2rem;
+            height: calc(100vh - 12rem);
+            /* Keep it contained to the viewport */
+        }
+
+        /* Chat Interface */
+        .chat-interface {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--alpha-10);
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Empty State */
+        .chat-empty-state {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding-bottom: 5rem;
+            transition: opacity 0.3s ease;
+        }
+
+        .chat-avatar-large {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.4) 0%, rgba(124, 58, 237, 0.8) 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 0 30px rgba(168, 85, 247, 0.3);
+            border: 2px solid var(--alpha-10);
+        }
+
+        .prompt-chip {
+            background: var(--alpha-5);
+            border: 1px solid var(--alpha-10);
+            color: var(--text-muted);
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+        }
+
+        .prompt-chip:hover {
+            background: rgba(168, 85, 247, 0.15);
+            border-color: rgba(168, 85, 247, 0.4);
+            color: var(--text-main);
+            transform: translateY(-2px);
+        }
+
+        /* Chat History */
+        .chat-history {
+            flex-grow: 1;
+            padding: 2rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            z-index: 5;
+            /* Below empty state, until empty state is hidden */
+        }
+
+        .message-row {
+            display: flex;
+            width: 100%;
+        }
+
+        .message-row.user {
+            justify-content: flex-end;
+        }
+
+        .message-bubble {
+            max-width: 80%;
+            padding: 1.25rem;
+            border-radius: 16px;
+            line-height: 1.6;
+            font-size: 1rem;
+        }
+
+        .message-row.user .message-bubble {
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.9) 0%, rgba(124, 58, 237, 0.9) 100%);
+            color: white;
+            border-bottom-right-radius: 4px;
+            box-shadow: 0 4px 15px rgba(124, 58, 237, 0.2);
+        }
+
+        .message-row.ai .message-wrapper {
+            display: flex;
+            gap: 1rem;
+            max-width: 85%;
+        }
+
+        .ai-avatar {
+            width: 36px;
+            height: 36px;
+            background: rgba(168, 85, 247, 0.2);
+            border: 1px solid rgba(168, 85, 247, 0.4);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+            margin-top: 4px;
+        }
+
+        .message-row.ai .message-bubble {
+            background: var(--bg-card);
+            border: 1px solid var(--alpha-5);
+            color: var(--text-muted);
+            border-bottom-left-radius: 4px;
+        }
+
+        /* Input Area */
+        .chat-input-wrapper {
+            padding: 1.5rem;
+            background: var(--bg-dark);
+            border-top: 1px solid var(--alpha-5);
+            z-index: 20;
+        }
+
+        .input-glass {
+            display: flex;
+            background: var(--glass-hover-bg);
+            border: 1px solid var(--alpha-10);
+            border-radius: 16px;
+            padding: 0.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .input-glass:focus-within {
+            border-color: rgba(168, 85, 247, 0.5);
+            box-shadow: 0 0 20px rgba(124, 58, 237, 0.2);
+        }
+
+        .chat-input {
+            flex-grow: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            padding: 1rem;
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .chat-input:focus {
+            outline: none;
+        }
+
+        .send-btn {
+            background: rgba(168, 85, 247, 0.2);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            color: #d8b4fe;
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .send-btn:hover {
+            background: rgba(168, 85, 247, 0.4);
+            color: var(--text-main);
+            transform: scale(1.05);
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1rem;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+
+        .quick-action-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--alpha-5);
+            color: var(--text-muted);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+
+        .quick-action-btn:hover {
+            background: var(--alpha-10);
+            color: var(--text-main);
+        }
+
+        /* Context Panel */
+        .context-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            overflow-y: auto;
+        }
+
+        .context-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--alpha-10);
+            border-radius: 16px;
+            padding: 1.5rem;
+        }
+
+        .context-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--alpha-5);
+            font-size: 0.9rem;
+        }
+
+        .context-row:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        /* Custom scrollbar for chat */
+        .chat-history::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-history::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .chat-history::-webkit-scrollbar-thumb {
+            background: var(--alpha-10);
+            border-radius: 4px;
+        }
+
+        .chat-history::-webkit-scrollbar-thumb:hover {
+            background: var(--alpha-20);
+        }
+    </style>
+    <script src="../js/config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="../js/theme.js"></script>
+</head>
+
+<body>
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar glass-panel"
+            style="margin: 1rem; padding: 1.5rem; display: flex; flex-direction: column;">
+            <div class="mb-5">
+                <a href="dashboard.html" class="navbar-brand" style="display: block;">RepoMind Space</a>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="sidebar-link">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                    Dashboard
+                </a>
+                <a href="workspaces.html" class="sidebar-link">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    Workspaces
+                </a>
+                <a href="repository-chat.html" class="sidebar-link active">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    Chats
+                </a>
+            </nav>
+            <!-- User Profile Area (Unified) -->
+            <div style="margin-top: auto; padding-top: 1.5rem; border-top: 1px solid var(--glass-border); display: flex; flex-direction: column; gap: 1rem;">
+                <a href="profile.html" style="display: flex; align-items: center; gap: 0.75rem; text-decoration: none; color: var(--text-main);">
+                    <div id="sidebar-avatar" style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #6366f1, #a855f7); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 0.9rem; overflow: hidden; flex-shrink: 0;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:60%;height:60%;color:rgba(255,255,255,0.8);"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+                    <div id="sidebar-greeting" style="font-size: 0.95rem; font-weight: 500;">Hello, there</div>
+                </a>
+                
+                <!-- Theme Switcher Pop-out -->
+                <div class="theme-switcher-container" style="background: var(--bg-dark); border: 1px solid var(--glass-border); border-radius: 8px; padding: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 0.8rem; color: var(--text-muted); padding-left: 0.25rem;">Theme</span>
+                    <div style="display: flex; gap: 0.25rem;">
+                        <button onclick="setThemeMode('system')" title="System Theme" class="theme-btn" data-theme-btn="system" style="background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 6px; border-radius: 6px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg></button>
+                        <button onclick="setThemeMode('light')" title="Light Theme" class="theme-btn" data-theme-btn="light" style="background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 6px; border-radius: 6px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg></button>
+                        <button onclick="setThemeMode('dark')" title="Dark Theme" class="theme-btn" data-theme-btn="dark" style="background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 6px; border-radius: 6px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg></button>
+                    </div>
+                </div>
+
+                <a href="#" class="sidebar-link" id="logoutBtn" style="color: #ef4444; margin-top: 0.5rem; padding: 0.5rem 0.75rem;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                    Logout
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content" style="padding: 3rem 4rem;">
+            <div style="max-width: 1400px; margin: 0 auto; height: 100%;">
+
+                <header style="margin-bottom: 2rem;">
+                    <h1 class="analysis-header-title">Repository Chat</h1>
+                    <p class="analysis-body-text" style="font-size: 1.125rem;">Chat directly with your codebase. Ask
+                        about architecture, debug issues, or generate ideas.</p>
+                </header>
+
+                <div class="chat-grid">
+
+                    <!-- LEFT: Chat Interface -->
+                    <div class="chat-interface">
+
+                        <!-- Chat History -->
+                        <div class="chat-history" id="chatHistory">
+                            <!-- Empty State -->
+                            <div class="chat-empty-state" id="emptyState"
+                                style="align-items: flex-start; justify-content: flex-end; padding-bottom: 2rem; padding-top: 2rem;">
+                                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                                    <div class="chat-avatar-large"
+                                        style="margin-bottom: 0; width: 48px; height: 48px; font-size: 1.5rem;">🤖</div>
+                                    <h2 style="font-size: 1.5rem; font-weight: 600; color: var(--text-main); margin: 0;">RepoMind
+                                        Assistant</h2>
+                                </div>
+                                <p style="color: var(--text-muted); margin-bottom: 1.5rem;">I can help you understand
+                                    this repository. Ask me anything or try a suggested prompt:</p>
+
+                                <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; max-width: 800px;">
+                                    <div class="prompt-chip" onclick="setPrompt(this)">Summarize this repository</div>
+                                    <div class="prompt-chip" onclick="setPrompt(this)">Explain the architecture</div>
+                                    <div class="prompt-chip" onclick="setPrompt(this)">What technologies are used?</div>
+                                    <div class="prompt-chip" onclick="setPrompt(this)">Suggest improvements</div>
+                                </div>
+                            </div>
+                            <!-- Messages injected via JS -->
+                        </div>
+
+                        <!-- Input Area -->
+                        <div class="chat-input-wrapper">
+                            <div class="input-glass">
+                                <input type="text" id="chatInput" class="chat-input"
+                                    placeholder="Ask a question about the repository..." autocomplete="off">
+                                <button class="send-btn" onclick="sendMessage()">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <div class="quick-actions">
+                                <button class="quick-action-btn" onclick="setPromptAndSend('Summarize Repo')">Summarize
+                                    Repo</button>
+                                <button class="quick-action-btn"
+                                    onclick="setPromptAndSend('Explain Architecture')">Explain Architecture</button>
+                                <button class="quick-action-btn"
+                                    onclick="setPromptAndSend('Analyze Code Quality')">Analyze Code Quality</button>
+                                <button class="quick-action-btn" onclick="setPromptAndSend('Generate README')">Generate
+                                    README</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT: Context Panel -->
+                    <div class="context-panel">
+
+                        <div class="context-card">
+                            <h3
+                                style="font-size: 1rem; font-weight: 600; color: var(--text-main); margin-bottom: 1rem; border-bottom: 1px solid var(--alpha-10); padding-bottom: 0.75rem;">
+                                Repository Context</h3>
+                            <div class="context-row">
+                                <span style="color: var(--text-muted); white-space: nowrap;">Name:</span>
+                                <span style="color: var(--text-main); font-weight: 500; text-align: right;" id="ctxRepoName">-</span>
+                            </div>
+                            <div class="context-row">
+                                <span style="color: var(--text-muted); white-space: nowrap;">Stack:</span>
+                                <span style="color: var(--text-main); text-align: right;" id="ctxRepoStack">-</span>
+                            </div>
+                            <div class="context-row">
+                                <span style="color: var(--text-muted); white-space: nowrap;">Files:</span>
+                                <span style="color: var(--text-main); text-align: right;" id="ctxRepoFiles">-</span>
+                            </div>
+                            <div class="context-row">
+                                <span style="color: var(--text-muted); white-space: nowrap;">Type:</span>
+                                <span style="color: #60a5fa; text-align: right;" id="ctxRepoType">-</span>
+                            </div>
+                            <div class="context-row">
+                                <span style="color: var(--text-muted); white-space: nowrap;">Analysis:</span>
+                                <span style="color: var(--success); text-align: right;" id="ctxRepoAnalysis">-</span>
+                            </div>
+                        </div>
+
+                        <div class="context-card">
+                            <h3
+                                style="font-size: 1rem; font-weight: 600; color: var(--text-main); margin-bottom: 1rem; border-bottom: 1px solid var(--alpha-10); padding-bottom: 0.75rem;">
+                                Recent Questions</h3>
+                            <ul id="recentQuestionsList"
+                                style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.75rem;">
+                                <li>
+                                    <a href="#"
+                                        style="color: #a78bfa; text-decoration: none; font-size: 0.9rem; display: flex; align-items: flex-start; gap: 0.5rem;"
+                                        onclick="setPrompt(this); return false;">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2"
+                                            style="margin-top: 3px; flex-shrink: 0;">
+                                            <circle cx="12" cy="12" r="10"></circle>
+                                            <polyline points="12 16 16 12 12 8"></polyline>
+                                            <line x1="8" y1="12" x2="16" y2="12"></line>
+                                        </svg>
+                                        What does this project do?
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#"
+                                        style="color: #a78bfa; text-decoration: none; font-size: 0.9rem; display: flex; align-items: flex-start; gap: 0.5rem;"
+                                        onclick="setPrompt(this); return false;">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2"
+                                            style="margin-top: 3px; flex-shrink: 0;">
+                                            <circle cx="12" cy="12" r="10"></circle>
+                                            <polyline points="12 16 16 12 12 8"></polyline>
+                                            <line x1="8" y1="12" x2="16" y2="12"></line>
+                                        </svg>
+                                        Explain folder structure
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#"
+                                        style="color: #a78bfa; text-decoration: none; font-size: 0.9rem; display: flex; align-items: flex-start; gap: 0.5rem;"
+                                        onclick="setPrompt(this); return false;">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2"
+                                            style="margin-top: 3px; flex-shrink: 0;">
+                                            <circle cx="12" cy="12" r="10"></circle>
+                                            <polyline points="12 16 16 12 12 8"></polyline>
+                                            <line x1="8" y1="12" x2="16" y2="12"></line>
+                                        </svg>
+                                        What technologies are used?
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const input = document.getElementById('chatInput');
+        const history = document.getElementById('chatHistory');
+        const emptyState = document.getElementById('emptyState');
+        
+        let isLoading = false;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadWorkspaceContext();
+        });
+
+        async function loadWorkspaceContext() {
+            const workspaceId = localStorage.getItem('currentWorkspaceId');
+            const token = localStorage.getItem('token');
+            if (!workspaceId || !token) return;
+
+            try {
+                const res = await fetch(`${API_BASE}/api/workspace/${workspaceId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                
+                if (data.name) {
+                    document.getElementById('ctxRepoName').innerText = data.name;
+                    document.getElementById('ctxRepoStack').innerText = data.technologies ? data.technologies.slice(0, 3).join(', ') : '-';
+                    document.getElementById('ctxRepoFiles').innerText = data.total_files || '-';
+                    document.getElementById('ctxRepoType').innerText = 'Standard';
+                    document.getElementById('ctxRepoAnalysis').innerText = 'Complete';
+                }
+            } catch (err) {
+                console.error("Failed to load workspace context", err);
+            }
+        }
+
+        function setPrompt(element) {
+            input.value = element.innerText;
+            input.focus();
+        }
+
+        function setPromptAndSend(text) {
+            input.value = text;
+            sendMessage();
+        }
+
+        async function sendMessage() {
+            if (isLoading) return;
+            const text = input.value.trim();
+            if (!text) return;
+            
+            const workspaceId = localStorage.getItem('currentWorkspaceId');
+            const token = localStorage.getItem('token');
+            
+            if (!workspaceId || !token) {
+                alert("Please select a workspace first.");
+                return;
+            }
+
+            // Hide empty state on first message
+            if (emptyState.style.display !== 'none') {
+                emptyState.style.opacity = '0';
+                setTimeout(() => {
+                    emptyState.style.display = 'none';
+                    history.style.display = 'flex';
+                }, 300);
+            }
+
+            // Append User Message
+            const userHtml = `
+                <div class="message-row user">
+                    <div class="message-bubble">
+                        ${text.replace(/</g, "&lt;").replace(/>/g, "&gt;")}
+                    </div>
+                </div>
+            `;
+            history.insertAdjacentHTML('beforeend', userHtml);
+            input.value = '';
+            
+            isLoading = true;
+            document.querySelector('.send-btn').style.opacity = '0.5';
+
+            // Scroll to bottom
+            setTimeout(() => { history.scrollTop = history.scrollHeight; }, 50);
+
+            // Add Loading Bubble
+            const loadingId = 'loading-' + Date.now();
+            const loadingHtml = `
+                <div class="message-row ai" id="${loadingId}">
+                    <div class="message-wrapper">
+                        <div class="ai-avatar">🤖</div>
+                        <div class="message-bubble" style="display: flex; align-items: center; gap: 8px;">
+                            <div class="spinner" style="width: 16px; height: 16px; border: 2px solid var(--alpha-10); border-top-color: #a855f7; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                            Analyzing codebase...
+                        </div>
+                    </div>
+                </div>
+            `;
+            history.insertAdjacentHTML('beforeend', loadingHtml);
+            history.scrollTop = history.scrollHeight;
+
+            try {
+                const response = await fetch(`${API_BASE}/api/chat/ask`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        workspace_id: workspaceId,
+                        message: text
+                    })
+                });
+
+                document.getElementById(loadingId).remove();
+                
+                // Set up the AI message container
+                const aiMessageId = 'ai-msg-' + Date.now();
+                const aiHtml = `
+                    <div class="message-row ai">
+                        <div class="message-wrapper">
+                            <div class="ai-avatar">🤖</div>
+                            <div id="${aiMessageId}" class="message-bubble markdown-body" style="background: var(--bg-card); color: var(--text-main); font-size: 0.95rem;">
+                            </div>
+                        </div>
+                    </div>
+                `;
+                history.insertAdjacentHTML('beforeend', aiHtml);
+                const aiMsgElement = document.getElementById(aiMessageId);
+                
+                if (response.status !== 200) {
+                    const errorData = await response.json();
+                    aiMsgElement.innerHTML = `<span style="color: #ef4444;">Error: ${errorData.error || 'Server error'}</span>`;
+                    return;
+                }
+                
+                // Read stream
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder("utf-8");
+                let fullResponse = "";
+                let buffer = "";
+                
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split('\n\n'); // SSE events separated by \n\n
+                    buffer = lines.pop(); // Keep incomplete event in buffer
+                    
+                    for (const block of lines) {
+                        const linesInBlock = block.split('\n');
+                        for (const line of linesInBlock) {
+                            if (line.startsWith('data: ')) {
+                                const dataStr = line.replace('data: ', '').trim();
+                                if (dataStr === '[DONE]') {
+                                    continue;
+                                }
+                                if (dataStr) {
+                                    try {
+                                        const parsed = JSON.parse(dataStr);
+                                        if (parsed.error) {
+                                            fullResponse += `<br><span style="color: #ef4444;">Error: ${parsed.error}</span>`;
+                                        } else if (parsed.text) {
+                                            fullResponse += parsed.text;
+                                        }
+                                        aiMsgElement.innerHTML = marked.parse(fullResponse);
+                                        history.scrollTop = history.scrollHeight;
+                                    } catch(e) {
+                                        console.error("Failed to parse chunk", e, dataStr);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // Refresh recent questions to show the newly asked one
+                loadRecentQuestions();
+                
+            } catch (err) {
+                document.getElementById(loadingId).remove();
+                history.insertAdjacentHTML('beforeend', `
+                    <div class="message-row ai">
+                        <div class="message-wrapper">
+                            <div class="ai-avatar">🤖</div>
+                            <div class="message-bubble" style="color: #ef4444;">
+                                Failed to connect to backend server.
+                            </div>
+                        </div>
+                    </div>
+                `);
+            } finally {
+                isLoading = false;
+                document.querySelector('.send-btn').style.opacity = '1';
+                history.scrollTop = history.scrollHeight;
+            }
+        }
+
+        input.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        async function loadRecentQuestions() {
+            const workspaceId = localStorage.getItem('currentWorkspaceId');
+            const token = localStorage.getItem('token');
+            if (!workspaceId || !token) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/api/chat/recent/${workspaceId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                
+                if (data.recent_questions && data.recent_questions.length > 0) {
+                    const list = document.getElementById('recentQuestionsList');
+                    list.innerHTML = ''; // clear out hardcoded
+                    data.recent_questions.forEach(q => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `
+                            <a href="#"
+                                style="color: #a78bfa; text-decoration: none; font-size: 0.9rem; display: flex; align-items: flex-start; gap: 0.5rem;"
+                                onclick="setPromptAndSend('${q.question.replace(/'/g, "\\'")}'); return false;" title="${q.question}">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-top: 3px; flex-shrink: 0;">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <polyline points="12 16 16 12 12 8"></polyline>
+                                    <line x1="8" y1="12" x2="16" y2="12"></line>
+                                </svg>
+                                <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px;">${q.question}</span>
+                            </a>
+                        `;
+                        list.appendChild(li);
+                    });
+                }
+            } catch (err) {
+                console.error("Failed to load recent questions:", err);
+            }
+        }
+
+        // Load initially and after a message is sent
+        document.addEventListener('DOMContentLoaded', loadRecentQuestions);
+        
+        // Add spinner animation styles
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes spin { 100% { transform: rotate(360deg); } }
+            .markdown-body pre { background: var(--bg-dark); padding: 1rem; border-radius: 8px; overflow-x: auto; margin: 0.5rem 0; }
+            .markdown-body code { font-family: monospace; background: var(--bg-dark); padding: 0.2rem 0.4rem; border-radius: 4px; }
+            .markdown-body p { margin-bottom: 0.75rem; }
+            .markdown-body p:last-child { margin-bottom: 0; }
+            .markdown-body ul, .markdown-body ol { padding-left: 1.5rem; margin-bottom: 0.75rem; }
+        `;
+        document.head.appendChild(style);
+    </script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/user-profile.js"></script>
+</body>
+
+</html>

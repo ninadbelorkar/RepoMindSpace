@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - RepoMind Space</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="../js/config.js"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script>
+        function handleGoogleResponse(response) {
+            fetch(`${API_BASE}/api/auth/google`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ credential: response.credential })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    // 4.4 MFA check
+                    if (data.mfa_required && data.pre_token) {
+                        sessionStorage.setItem('mfa_pre_token', data.pre_token);
+                        window.location.href = 'mfa-verify.html';
+                        return;
+                    }
+                    if (data.token) {
+                        localStorage.setItem('token', data.token);
+                        if (data.user && data.user.onboarding_completed === false) {
+                            window.location.href = 'onboarding.html';
+                        } else {
+                            window.location.href = 'dashboard.html';
+                        }
+                    } else {
+                        const errorDiv = document.getElementById('loginError');
+                        const msg = data.error || 'Google login failed';
+                        if (errorDiv) { errorDiv.textContent = msg; errorDiv.style.display = 'block'; }
+                        else { alert(msg); }
+                    }
+                })
+                .catch(err => {
+                    console.error('Error during Google Auth:', err);
+                    alert('Failed to connect to backend server.');
+                });
+        }
+
+    </script>
+</head>
+
+<body style="padding: 0; background-color: #1e1b2e;">
+    <div class="auth-split">
+        <div class="auth-split-left">
+            <div class="auth-header">
+                <div>
+                    <div class="auth-brand">RepoMind Space</div>
+                </div>
+                <a href="../index.html" class="auth-back">Back to website &rarr;</a>
+            </div>
+            <div class="auth-hero-text">
+                <h1>Capturing Intelligence,<br>Creating Repositories</h1>
+                <div class="carousel-indicators" style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                    <div class="indicator"></div>
+                    <div class="indicator"></div>
+                    <div class="indicator"></div>
+                </div>
+            </div>
+        </div>
+        <div class="auth-split-right">
+            <div class="auth-form-wrapper">
+                <div style="text-align: center; margin-bottom: 2rem;">
+                    <h2 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Welcome Back</h2>
+                </div>
+                <p class="auth-subtitle">Don't have an account? <a href="register.html"
+                        style="color: #a78bfa; text-decoration: underline;">Sign up</a></p>
+
+                <form id="loginForm">
+                    <div class="form-group">
+                        <input type="email" id="email" class="form-control" required placeholder="Email">
+                    </div>
+                    <div class="form-group" style="position: relative;">
+                        <input type="password" id="password" class="form-control" required
+                            placeholder="Enter your password" style="padding-right: 2.5rem;">
+                        <span id="togglePassword" style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--text-muted);">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-eye"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>
+                        </span>
+                        <div id="loginError" style="color: #ef4444; font-size: 0.875rem; margin-top: 0.5rem; display: none;"></div>
+                    </div>
+                    <div class="form-group" style="display: flex; justify-content: space-between; font-size: 0.875rem;">
+                        <label
+                            style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted); cursor: pointer;">
+                            <input type="checkbox" style="accent-color: #6366f1;"> Remember me
+                        </label>
+                        <a href="forgot-password.html" style="color: #a78bfa;">Forgot password?</a>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Log in</button>
+                </form>
+
+                <script>
+                    document.addEventListener('DOMContentLoaded', () => {
+                        const togglePassword = document.getElementById('togglePassword');
+                        const password = document.getElementById('password');
+                        if (togglePassword && password) {
+                            togglePassword.addEventListener('click', function () {
+                                const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+                                password.setAttribute('type', type);
+                            });
+                        }
+                    });
+                </script>
+
+                <div class="divider">Or log in with</div>
+                <div class="social-login" style="justify-content: center;">
+                    <div id="g_id_onload"
+                        data-client_id="1091939061408-1rpl2tqd6tn2iulba1oo8v1cfh94t4bs.apps.googleusercontent.com"
+                        data-context="signin" data-ux_mode="popup" data-callback="handleGoogleResponse"
+                        data-auto_prompt="false">
+                    </div>
+                    <div class="g_id_signin" data-type="standard" data-shape="rectangular" data-theme="filled_black"
+                        data-text="signin_with" data-size="large" data-logo_alignment="left" style="width: 100%;">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="../js/auth.js"></script>
+</body>
+
+</html>
