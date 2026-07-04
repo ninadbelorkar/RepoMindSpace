@@ -84,10 +84,48 @@ document.addEventListener('DOMContentLoaded', () => {
                 metricTotalFiles.innerText = data.total_files;
             }
 
-            // Update Summary
+            // Handle Summary AI Generation
+            const summaryLoader = document.getElementById('summaryLoader');
+            const loaderText = document.getElementById('loaderText');
             const summaryText = document.getElementById('summaryText');
-            if (summaryText) {
-                summaryText.innerText = `This repository (${data.name}) contains ${data.total_files} files and is primarily built using ${data.technologies.join(', ')}.`;
+
+            if (summaryLoader && loaderText && summaryText) {
+                if (data.summary) {
+                    summaryLoader.style.display = 'none';
+                    summaryText.innerText = data.summary;
+                    summaryText.style.display = 'block';
+                } else {
+                    const messages = ["Reading repo...", "Understanding the architecture...", "Analyzing logic..."];
+                    let msgIndex = 0;
+                    const msgInterval = setInterval(() => {
+                        msgIndex = (msgIndex + 1) % messages.length;
+                        loaderText.innerText = messages[msgIndex];
+                    }, 2500);
+
+                    fetch(`${API_BASE}/api/workspace/${workspaceId}/generate_summary`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    })
+                    .then(res => res.json())
+                    .then(summaryData => {
+                        clearInterval(msgInterval);
+                        summaryLoader.style.display = 'none';
+                        if (summaryData.summary) {
+                            summaryText.innerText = summaryData.summary;
+                            summaryText.style.display = 'block';
+                            showNotification("Analysis Summary is ready!");
+                        } else {
+                            summaryText.innerText = "Failed to generate AI summary.";
+                            summaryText.style.display = 'block';
+                        }
+                    })
+                    .catch(err => {
+                        clearInterval(msgInterval);
+                        summaryLoader.style.display = 'none';
+                        summaryText.innerText = "Error generating AI summary.";
+                        summaryText.style.display = 'block';
+                    });
+                }
             }
 
             // Update Technology Stack container (assuming it's the element after the summary)
@@ -122,6 +160,32 @@ document.addEventListener('DOMContentLoaded', () => {
                 stackContainer.appendChild(pillContainer);
             }
 
+            // Update API Endpoints
+            const metricApiEndpoints = document.getElementById('metricApiEndpoints');
+            if (metricApiEndpoints) {
+                metricApiEndpoints.innerText = data.api_endpoints_count || 0;
+            }
+
+            // Update Detected Modules
+            const metricDetectedModules = document.getElementById('metricDetectedModules');
+            if (metricDetectedModules) {
+                if (data.detected_modules && data.detected_modules.length > 0) {
+                    metricDetectedModules.innerText = data.detected_modules.join(', ');
+                    metricDetectedModules.style.fontSize = '1.25rem'; // smaller font since it's a list
+                } else {
+                    metricDetectedModules.innerText = '0';
+                    metricDetectedModules.style.fontSize = '2.5rem'; // reset to large font for 0
+                }
+                metricDetectedModules.style.wordBreak = 'break-word';
+            }
+
+            // Update Folder Structure
+            const preTags = document.querySelectorAll('pre');
+            const folderPre = Array.from(preTags).find(pre => pre.innerText.includes('Loading folder structure'));
+            if (folderPre) {
+                folderPre.innerText = data.folder_structure || 'No folder structure available.';
+            }
+
             // Trigger the progress animation
             animateProgress();
         })
@@ -136,3 +200,48 @@ document.addEventListener('DOMContentLoaded', () => {
         loadAnalysisData();
     }
 });
+
+// Helper for slide-in notifications
+function showNotification(message) {
+    let container = document.getElementById('notification-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'notification-container';
+        container.style.position = 'fixed';
+        container.style.top = '20px';
+        container.style.right = '20px';
+        container.style.zIndex = '9999';
+        container.style.display = 'flex';
+        container.style.flexDirection = 'column';
+        container.style.gap = '10px';
+        document.body.appendChild(container);
+    }
+    
+    const notif = document.createElement('div');
+    notif.style.background = 'linear-gradient(135deg, rgba(168, 85, 247, 0.95), rgba(124, 58, 237, 0.95))';
+    notif.style.color = '#fff';
+    notif.style.padding = '12px 20px';
+    notif.style.borderRadius = '8px';
+    notif.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+    notif.style.fontWeight = '500';
+    notif.style.transform = 'translateX(120%)';
+    notif.style.transition = 'transform 0.3s ease-out';
+    notif.innerText = message;
+    
+    container.appendChild(notif);
+    
+    // Trigger slide in
+    setTimeout(() => {
+        notif.style.transform = 'translateX(0)';
+    }, 10);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        notif.style.transform = 'translateX(120%)';
+        setTimeout(() => {
+            if (notif.parentNode) {
+                notif.parentNode.removeChild(notif);
+            }
+        }, 300);
+    }, 3000);
+}

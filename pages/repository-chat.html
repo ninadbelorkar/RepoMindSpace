@@ -423,54 +423,15 @@
                             </div>
                         </div>
 
-                        <div class="context-card">
-                            <h3
-                                style="font-size: 1rem; font-weight: 600; color: var(--text-main); margin-bottom: 1rem; border-bottom: 1px solid var(--alpha-10); padding-bottom: 0.75rem;">
-                                Recent Questions</h3>
-                            <ul id="recentQuestionsList"
-                                style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.75rem;">
-                                <li>
-                                    <a href="#"
-                                        style="color: #a78bfa; text-decoration: none; font-size: 0.9rem; display: flex; align-items: flex-start; gap: 0.5rem;"
-                                        onclick="setPrompt(this); return false;">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                                            stroke="currentColor" stroke-width="2"
-                                            style="margin-top: 3px; flex-shrink: 0;">
-                                            <circle cx="12" cy="12" r="10"></circle>
-                                            <polyline points="12 16 16 12 12 8"></polyline>
-                                            <line x1="8" y1="12" x2="16" y2="12"></line>
-                                        </svg>
-                                        What does this project do?
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="#"
-                                        style="color: #a78bfa; text-decoration: none; font-size: 0.9rem; display: flex; align-items: flex-start; gap: 0.5rem;"
-                                        onclick="setPrompt(this); return false;">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                                            stroke="currentColor" stroke-width="2"
-                                            style="margin-top: 3px; flex-shrink: 0;">
-                                            <circle cx="12" cy="12" r="10"></circle>
-                                            <polyline points="12 16 16 12 12 8"></polyline>
-                                            <line x1="8" y1="12" x2="16" y2="12"></line>
-                                        </svg>
-                                        Explain folder structure
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="#"
-                                        style="color: #a78bfa; text-decoration: none; font-size: 0.9rem; display: flex; align-items: flex-start; gap: 0.5rem;"
-                                        onclick="setPrompt(this); return false;">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                                            stroke="currentColor" stroke-width="2"
-                                            style="margin-top: 3px; flex-shrink: 0;">
-                                            <circle cx="12" cy="12" r="10"></circle>
-                                            <polyline points="12 16 16 12 12 8"></polyline>
-                                            <line x1="8" y1="12" x2="16" y2="12"></line>
-                                        </svg>
-                                        What technologies are used?
-                                    </a>
-                                </li>
+                        <div class="context-card" style="display: flex; flex-direction: column; max-height: calc(100vh - 25rem);">
+                            <button onclick="newChat()" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.9) 0%, rgba(124, 58, 237, 0.9) 100%); color: white; border: none; padding: 0.75rem; border-radius: 8px; font-weight: 600; cursor: pointer; margin-bottom: 1rem; width: 100%; transition: opacity 0.2s;">
+                                ➕ New Chat
+                            </button>
+                            <h3 style="font-size: 1rem; font-weight: 600; color: var(--text-main); margin-bottom: 1rem; border-bottom: 1px solid var(--alpha-10); padding-bottom: 0.75rem;">
+                                Chat History
+                            </h3>
+                            <ul id="chatHistoryList" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.75rem; overflow-y: auto;">
+                                <!-- History injected via JS -->
                             </ul>
                         </div>
 
@@ -487,6 +448,7 @@
         const emptyState = document.getElementById('emptyState');
         
         let isLoading = false;
+        let currentSessionId = null;
 
         document.addEventListener('DOMContentLoaded', () => {
             loadWorkspaceContext();
@@ -589,7 +551,8 @@
                     },
                     body: JSON.stringify({
                         workspace_id: workspaceId,
-                        message: text
+                        message: text,
+                        session_id: currentSessionId
                     })
                 });
 
@@ -640,6 +603,9 @@
                                 if (dataStr) {
                                     try {
                                         const parsed = JSON.parse(dataStr);
+                                        if (parsed.session_id) {
+                                            currentSessionId = parsed.session_id;
+                                        }
                                         if (parsed.error) {
                                             fullResponse += `<br><span style="color: #ef4444;">Error: ${parsed.error}</span>`;
                                         } else if (parsed.text) {
@@ -656,8 +622,8 @@
                     }
                 }
                 
-                // Refresh recent questions to show the newly asked one
-                loadRecentQuestions();
+                // Refresh history to show the newly asked one
+                loadChatHistory();
                 
             } catch (err) {
                 document.getElementById(loadingId).remove();
@@ -684,44 +650,104 @@
             }
         });
 
-        async function loadRecentQuestions() {
+        async function loadChatHistory() {
             const workspaceId = localStorage.getItem('currentWorkspaceId');
             const token = localStorage.getItem('token');
             if (!workspaceId || !token) return;
 
             try {
-                const response = await fetch(`${API_BASE}/api/chat/recent/${workspaceId}`, {
+                const response = await fetch(`${API_BASE}/api/chat/history/${workspaceId}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const data = await response.json();
                 
-                if (data.recent_questions && data.recent_questions.length > 0) {
-                    const list = document.getElementById('recentQuestionsList');
-                    list.innerHTML = ''; // clear out hardcoded
-                    data.recent_questions.forEach(q => {
+                if (data.sessions) {
+                    const list = document.getElementById('chatHistoryList');
+                    list.innerHTML = '';
+                    if (data.sessions.length === 0) {
+                        list.innerHTML = '<li style="color: var(--text-muted); font-size: 0.9rem;">No past chats</li>';
+                        return;
+                    }
+                    data.sessions.forEach(s => {
                         const li = document.createElement('li');
                         li.innerHTML = `
                             <a href="#"
                                 style="color: #a78bfa; text-decoration: none; font-size: 0.9rem; display: flex; align-items: flex-start; gap: 0.5rem;"
-                                onclick="setPromptAndSend('${q.question.replace(/'/g, "\\'")}'); return false;" title="${q.question}">
+                                onclick="loadSession('${s.id}'); return false;" title="${s.title}">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-top: 3px; flex-shrink: 0;">
-                                    <circle cx="12" cy="12" r="10"></circle>
-                                    <polyline points="12 16 16 12 12 8"></polyline>
-                                    <line x1="8" y1="12" x2="16" y2="12"></line>
+                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                                 </svg>
-                                <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px;">${q.question}</span>
+                                <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px;">${s.title}</span>
                             </a>
                         `;
                         list.appendChild(li);
                     });
                 }
             } catch (err) {
-                console.error("Failed to load recent questions:", err);
+                console.error("Failed to load chat history:", err);
             }
         }
 
+        async function loadSession(sessionId) {
+            const token = localStorage.getItem('token');
+            if (!token) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/api/chat/session/${sessionId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                
+                if (data.id) {
+                    currentSessionId = data.id;
+                    
+                    // Clear current chat
+                    history.innerHTML = '';
+                    emptyState.style.display = 'none';
+                    history.style.display = 'flex';
+                    
+                    data.messages.forEach(msg => {
+                        if (msg.role === 'user') {
+                            history.insertAdjacentHTML('beforeend', `
+                                <div class="message-row user">
+                                    <div class="message-bubble">
+                                        ${msg.content.replace(/</g, "&lt;").replace(/>/g, "&gt;")}
+                                    </div>
+                                </div>
+                            `);
+                        } else {
+                            history.insertAdjacentHTML('beforeend', `
+                                <div class="message-row ai">
+                                    <div class="message-wrapper">
+                                        <div class="ai-avatar">🤖</div>
+                                        <div class="message-bubble markdown-body" style="background: var(--bg-card); color: var(--text-main); font-size: 0.95rem;">
+                                            ${marked.parse(msg.content)}
+                                        </div>
+                                    </div>
+                                </div>
+                            `);
+                        }
+                    });
+                    
+                    setTimeout(() => { history.scrollTop = history.scrollHeight; }, 50);
+                }
+            } catch (err) {
+                console.error("Failed to load session:", err);
+                alert("Failed to load chat session.");
+            }
+        }
+
+        function newChat() {
+            currentSessionId = null;
+            history.innerHTML = '';
+            history.appendChild(emptyState);
+            emptyState.style.opacity = '1';
+            emptyState.style.display = 'flex';
+            input.value = '';
+        }
+
         // Load initially and after a message is sent
-        document.addEventListener('DOMContentLoaded', loadRecentQuestions);
+        document.addEventListener('DOMContentLoaded', loadChatHistory);
         
         // Add spinner animation styles
         const style = document.createElement('style');

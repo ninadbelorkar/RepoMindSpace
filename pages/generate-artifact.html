@@ -119,14 +119,14 @@
                                     <h2
                                         style="font-size: 1.125rem; font-weight: 600; color: #a78bfa; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px;">
                                         Recommended Next Artifact</h2>
-                                    <h3 style="font-size: 2rem; font-weight: 700; color: var(--text-main); margin-bottom: 1rem;">
+                                    <h3 id="recTitle" style="font-size: 2rem; font-weight: 700; color: var(--text-main); margin-bottom: 1rem;">
                                         README Documentation</h3>
-                                    <p
+                                    <p id="recDesc"
                                         style="color: var(--text-muted); font-size: 1.125rem; margin-bottom: 2rem; max-width: 600px; line-height: 1.6;">
                                         Generate a complete README with setup instructions, project structure, usage,
                                         and feature overview. Best starting point for this repository.
                                     </p>
-                                    <button class="action-btn-large primary" onclick="generate('README', this)"
+                                    <button id="recBtn" class="action-btn-large primary" onclick="generate('README', this)"
                                         style="font-size: 1.125rem; padding: 1.25rem 2.5rem; border-radius: 12px; font-weight: 600;">
                                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
                                             stroke="currentColor" stroke-width="2" style="margin-right: 8px;">
@@ -135,7 +135,7 @@
                                         <span>Generate Recommended Artifact</span>
                                     </button>
                                 </div>
-                                <div
+                                <div id="recIcon"
                                     style="font-size: 5rem; opacity: 0.9; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.3));">
                                     📘</div>
                             </div>
@@ -570,6 +570,36 @@
                             `;
                             recentContainer.appendChild(miniCard);
                         });
+                    }
+
+                    // Update Recommendation Engine
+                    const generatedTypes = data.artifacts.map(a => a.type.toLowerCase());
+                    const recommendations = [
+                        { type: 'readme', title: 'README Documentation', icon: '📘', desc: 'Generate a complete README with setup instructions, project structure, usage, and feature overview. Best starting point for this repository.' },
+                        { type: 'documentation', title: 'Technical Documentation', icon: '🧩', desc: 'Generate detailed architecture, module, and API documentation to understand the system design.' },
+                        { type: 'userstories', title: 'User Stories', icon: '📝', desc: 'Extract Agile user stories and acceptance criteria from project functionality to plan the next sprint.' },
+                        { type: 'testcases', title: 'Test Cases', icon: '🧪', desc: 'Generate comprehensive unit and integration test plans to ensure code reliability.' },
+                        { type: 'buganalysis', title: 'Bug Analysis', icon: '🐞', desc: 'Scan code for potential bugs, security vulnerabilities, and logic flaws.' },
+                        { type: 'commitsummary', title: 'Commit Summary', icon: '📊', desc: 'Summarize git history, progress, and development timeline to see what changed.' }
+                    ];
+
+                    let nextRec = recommendations.find(r => !generatedTypes.includes(r.type));
+                    
+                    const recTitle = document.getElementById('recTitle');
+                    const recDesc = document.getElementById('recDesc');
+                    const recBtn = document.getElementById('recBtn');
+                    const recIcon = document.getElementById('recIcon');
+
+                    if (nextRec && recTitle && recDesc && recBtn && recIcon) {
+                        recTitle.innerText = nextRec.title;
+                        recDesc.innerText = nextRec.desc;
+                        recIcon.innerText = nextRec.icon;
+                        recBtn.setAttribute('onclick', `generate('${nextRec.type === 'documentation' ? 'Documentation' : nextRec.type === 'userstories' ? 'UserStories' : nextRec.type === 'testcases' ? 'TestCases' : nextRec.type === 'buganalysis' ? 'BugAnalysis' : nextRec.type === 'commitsummary' ? 'CommitSummary' : 'README'}', this)`);
+                    } else if (!nextRec && recTitle) {
+                        recTitle.innerText = 'All Standard Artifacts Generated!';
+                        recDesc.innerText = 'You have generated all standard artifacts for this repository. You can still generate custom ones using Repository Chat, or regenerate existing ones.';
+                        recIcon.innerText = '🏆';
+                        recBtn.style.display = 'none';
                     }
 
                 }

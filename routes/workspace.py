@@ -165,7 +165,30 @@ def get_workspace(workspace_id):
     
     total_files = 0
     technologies = []
+    api_endpoints_count = 0
+    detected_modules = set()
+    folder_structure = "No folder structure available."
     
+    def generate_tree(paths):
+        tree = {}
+        for path in paths:
+            parts = path.replace('\\', '/').split('/')
+            current = tree
+            for part in parts:
+                current = current.setdefault(part, {})
+        def render_tree(d, prefix=""):
+            lines = []
+            entries = sorted(list(d.keys()))
+            for i, key in enumerate(entries):
+                is_last = i == len(entries) - 1
+                connector = "└── " if is_last else "├── "
+                lines.append(prefix + connector + key)
+                extension = "    " if is_last else "│   "
+                if d[key]:
+                    lines.extend(render_tree(d[key], prefix + extension))
+            return lines
+        return "\n".join(render_tree(tree))
+
     if local_path and os.path.exists(local_path):
         try:
             parser = LocalParser(local_path)
@@ -173,11 +196,37 @@ def get_workspace(workspace_id):
             total_files = len(parsed_data)
             
             tech_count = {}
+            file_paths = []
+            
+            import re, json
+            
             for file_obj in parsed_data:
                 lang = file_obj.get('language', 'Unknown')
+                path = file_obj.get('path', '')
+                content = file_obj.get('content', '')
+                
+                file_paths.append(path)
+                
                 if lang and lang.lower() != 'unknown':
                     tech_count[lang] = tech_count.get(lang, 0) + 1
                     
+                # Basic API endpoint heuristic
+                if lang in ['python', 'javascript', 'typescript', 'go', 'java', 'csharp']:
+                    api_endpoints_count += len(re.findall(r'(@app\.route|router\.(get|post|put|delete)|app\.(get|post|put|delete)|http\.HandleFunc|@GetMapping|@PostMapping|[Hh]ttp[Gg]et|[Hh]ttp[Pp]ost)', content))
+                
+                # Module detection heuristic
+                if path.endswith('package.json'):
+                    try:
+                        pkg = json.loads(content)
+                        deps = list(pkg.get('dependencies', {}).keys())[:8]
+                        detected_modules.update(deps)
+                    except: pass
+                elif path.endswith('requirements.txt'):
+                    deps = [line.split('==')[0].split('>=')[0].strip() for line in content.split('\n') if line and not line.startswith('#')][:8]
+                    detected_modules.update(deps)
+                    
+            folder_structure = generate_tree(file_paths) if file_paths else "Empty repository."
+
             # Sort technologies by frequency, take top 5
             sorted_tech = sorted(tech_count.items(), key=lambda item: item[1], reverse=True)
             technologies = [item[0] for item in sorted_tech[:5]]
@@ -194,8 +243,75 @@ def get_workspace(workspace_id):
         'repo_url': workspace.get('repo_url', ''),
         'status': workspace.get('status', 'unknown'),
         'total_files': total_files,
-        'technologies': technologies
+        'technologies': technologies,
+        'api_endpoints_count': api_endpoints_count,
+        'detected_modules': list(detected_modules),
+        'folder_structure': folder_structure,
+        'summary': workspace.get('summary')
     }), 200
+
+@workspace_bp.route('/<workspace_id>/generate_summary', methods=['POST'])
+@token_required
+def generate_summary(workspace_id):
+    db = current_app.config['DB']
+    user_id = request.user_id
+    
+    workspace = db.workspaces.find_one({'_id': workspace_id, 'user_id': user_id})
+    if not workspace:
+        return jsonify({'error': 'Workspace not found'}), 404
+        
+    local_path = workspace.get('local_path')
+    if not local_path or not os.path.exists(local_path):
+        return jsonify({'error': 'Workspace files not found'}), 404
+        
+    try:
+        parser = LocalParser(local_path)
+        parsed_data = parser.parse()
+        
+        # Build context
+        context_string = ""
+        for file_obj in parsed_data[:15]: # Limit to avoid huge tokens
+            path = file_obj.get('path', '')
+            content = file_obj.get('content', '')
+            context_string += f"File: {path}\nContent:\n{content[:400]}\n\n"
+            
+        import google.generativeai as genai
+        genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+        
+        prompt = f"""Analyze the following codebase and provide a concise 2-3 sentence high-level summary of what this repository does and what technologies it uses.
+
+CRITICAL INSTRUCTIONS:
+- Return ONLY the final 2-3 sentences.
+- Do NOT include any bullet points, lists, headings, or markdown formatting (no asterisks).
+- Do NOT include your internal thought process, drafts, or reasoning.
+- Output MUST be a single plain text paragraph.
+
+Codebase:
+{context_string}"""
+        
+        MODEL_FALLBACK = ['gemini-2.0-flash', 'gemini-2.0-flash-lite', 'gemma-4-26b-a4b-it', 'gemini-2.5-flash']
+        summary = None
+        
+        for model_name in MODEL_FALLBACK:
+            try:
+                model = genai.GenerativeModel(model_name)
+                response = model.generate_content(prompt)
+                summary = response.text
+                if summary:
+                    break
+            except Exception as e:
+                print(f"Model {model_name} failed: {e}")
+                continue
+                
+        if not summary:
+            return jsonify({'error': 'All models failed to generate summary'}), 500
+        
+        # Save to DB so we don't have to generate it again
+        db.workspaces.update_one({'_id': workspace_id}, {'$set': {'summary': summary}})
+        
+        return jsonify({'summary': summary}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @workspace_bp.route('/stats', methods=['GET'])
 @token_required
@@ -206,7 +322,7 @@ def get_stats():
     total_workspaces = db.workspaces.count_documents({'user_id': user_id})
     repos_processed = db.workspaces.count_documents({'user_id': user_id, 'status': 'ready'})
     generated_artifacts = db.artifacts.count_documents({'user_id': user_id})
-    total_chats = db.chats.count_documents({'user_id': user_id})
+    total_chats = db.chat_sessions.count_documents({'user_id': user_id})
         
     now = datetime.datetime.utcnow()
     one_week_ago = now - datetime.timedelta(days=7)
@@ -223,7 +339,7 @@ def get_stats():
         'workspaces': get_growth(db.workspaces, 'created_at'),
         'repos': get_growth(db.workspaces, 'created_at'),
         'artifacts': get_growth(db.artifacts, 'created_at'),
-        'chats': get_growth(db.chats, 'created_at')
+        'chats': get_growth(db.chat_sessions, 'created_at')
     }
     
     # 7-day chart data for artifacts
@@ -260,7 +376,7 @@ def list_workspaces():
     for ws in workspaces:
         ws_id = ws['_id']
         artifact_count = db.artifacts.count_documents({'workspace_id': ws_id}) if 'artifacts' in db.list_collection_names() else 0
-        chat_count = db.chats.count_documents({'workspace_id': ws_id}) if 'chats' in db.list_collection_names() else 0
+        chat_count = db.chat_sessions.count_documents({'workspace_id': ws_id}) if 'chat_sessions' in db.list_collection_names() else 0
 
         # Parse tech stack if local_path exists
         technologies = []
@@ -331,8 +447,8 @@ def delete_workspace(workspace_id):
     
     if 'artifacts' in db.list_collection_names():
         db.artifacts.delete_many({'workspace_id': workspace_id})
-    if 'chats' in db.list_collection_names():
-        db.chats.delete_many({'workspace_id': workspace_id})
+    if 'chat_sessions' in db.list_collection_names():
+        db.chat_sessions.delete_many({'workspace_id': workspace_id})
         
     import shutil
     local_path = workspace.get('local_path')

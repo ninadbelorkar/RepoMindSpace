@@ -9,6 +9,12 @@
     <link rel="stylesheet" href="../css/style.css">
     <script src="../js/config.js"></script>
     <script src="../js/theme.js"></script>
+    <style>
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
 </head>
 
 <body>
@@ -113,8 +119,13 @@
                         <h2
                             style="font-size: 1.25rem; font-weight: 700; color: var(--text-main); margin-bottom: 1.25rem; position: relative; z-index: 1;">
                             Repository Summary</h2>
-                        <p style="color: var(--text-muted); font-size: 1.05rem; line-height: 1.7; position: relative; z-index: 1;"
-                            id="summaryText">
+                        <div id="summaryLoader" style="display: flex; flex-direction: column; align-items: flex-start; gap: 0.75rem; position: relative; z-index: 1;">
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <div class="spinner" style="width: 20px; height: 20px; border: 2px solid rgba(168, 85, 247, 0.2); border-top-color: #a855f7; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                                <span id="loaderText" style="color: var(--text-muted); font-size: 0.95rem; font-style: italic;">Reading repo...</span>
+                            </div>
+                        </div>
+                        <p style="color: var(--text-muted); font-size: 1.05rem; line-height: 1.7; position: relative; z-index: 1; display: none;" id="summaryText">
                             -
                         </p>
                     </div>

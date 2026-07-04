@@ -91,7 +91,7 @@
     </div>
 
     <script>
-        const API_BASE = `${API_BASE}/api/auth`;
+        const API_AUTH_URL = `${API_BASE}/api/auth`;
         let googlePicUrl = null;
 
         document.addEventListener('DOMContentLoaded', async () => {
@@ -99,7 +99,7 @@
             if (!token) { window.location.href = 'login.html'; return; }
 
             try {
-                const res = await fetch(`${API_BASE}/me`, { headers: { 'Authorization': `Bearer ${token}` } });
+                const res = await fetch(`${API_AUTH_URL}/me`, { headers: { 'Authorization': `Bearer ${token}` } });
                 const data = await res.json();
                 if (data.error) throw new Error(data.error);
 
@@ -151,7 +151,7 @@
                 btn.disabled = true;
 
                 try {
-                    const res = await fetch(`${API_BASE}/profile`, {
+                    const res = await fetch(`${API_AUTH_URL}/profile`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
                         body: JSON.stringify(payload)
